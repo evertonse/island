@@ -1,0 +1,48 @@
+name      = "App"
+compiler  = "gcc"
+version   = "c++20"
+
+#-O
+#optimize = "off"
+optimize = "off"
+
+#debug = "on"
+debug = "off"
+
+binpath = "bin/"
+
+srcfiles = [
+    "src/main.cpp",
+]
+
+# -D
+defines = [
+	"_CRT_SECURE_NO_WARNINGS",
+]
+
+# -I
+includedirs = [
+  "src/", 
+  "demos/", 
+  "vendor/", 
+  "vendor/glad/include", 
+  "vendor/stb/include", 
+]
+
+# -L
+libdirs = [
+
+]
+
+# -l
+libfiles = [
+  "freeglut",
+  "user32",
+  "gdi32",
+  "glu32",
+  "opengl32",
+]
+
+# -W
+warnings = [
+]

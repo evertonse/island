@@ -1,0 +1,5 @@
+vendor/SDL/**
+vendor/SDL/
+vendor/SDL
+**.bat
+**.exe
