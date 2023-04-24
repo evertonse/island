@@ -11,3 +11,7 @@
 
 ### Window
 - Use ``msys2/mingw`` terminal to install freeglut with the command: ``pacman -S mingw-w64-x86_64-freeglut``.
+
+# Commands:
+- w,s,d,a,space camera movement
+- esc, unlock camera, currently doenst work
