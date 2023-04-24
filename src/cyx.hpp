@@ -11,8 +11,9 @@
 #include "math/mat.hpp"
 #include "math/useful.hpp"
 
-//#include "graphics/texture.hpp"
 //#include "graphics/rendering.hpp"
+#include "graphics/texture.hpp"
+#include "graphics/vertex.hpp"
 #include "graphics/shader.hpp"
 
 #include "graphics/mesh.hpp"

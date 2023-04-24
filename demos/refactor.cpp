@@ -12,8 +12,9 @@ using namespace island;
 
 
 struct Flags {
-    bool mouse_lock = true;
+    bool mouse_lock = false; // doesnt work for now
 } flag;
+
 
 #include <iostream>
 using std::cout;
@@ -31,11 +32,11 @@ vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
 vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
-AccelCamera cam(cameraPosition,cameraUp);
+AccelCamera cam = AccelCamera(vec3(0.0f, 0.0f, 3.0f));
 f64 delta_time = 0.0f;
-unsigned int texture;
-unsigned int VBO;
-unsigned int VAO;
+Texture* texture;
+VertexBuffer* VBO;
+VertexArray* VAO;
 
 auto& key_is_down = * (new std::map<Key,bool>());
 
@@ -48,44 +49,50 @@ Shader shader(
 float vertices[] =
 {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+
+    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
     -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
     -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
     -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+
     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
     -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
     -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
@@ -106,63 +113,43 @@ vec3 cubePositions[] =
 };
 
 auto on_create(Window& win) {
-
-
     gladLoadGL();
+    std::cout << "got here" ;
+
     // Vertex Buffer Object
-    glGenBuffers(1, &VBO);
 
     // Vertex Array Object
-    glGenVertexArrays(1, &VAO);
 
     // Vincular VAO, VBO e EBO
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
+    VAO = new VertexArray();
+    VBO = new VertexBuffer();
+    texture = new Texture();
+    VAO->bind();
+    VBO->bind();
     // Copiar dados dos vertices para o VBO vinculado
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    VBO->set_data(vertices, sizeof(vertices));
 
-    // Atribuir ponteiros para os vertices
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    VertexLayout layout;
+    layout.push( VertexAttr::Float3 );
+    layout.push( VertexAttr::Float2 );
 
-    // Atribuir ponteiros para as texuturas
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    
-    // Textura
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    VAO->add(*VBO,layout);
 
-    // Definir parâmetros de quebra de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture->load("assets/textures/wall.jpg");
 
-    // Definir parâmetros de filtragem de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    ///// Definir parâmetros de quebra de textura
+    ///glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    ///glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    // Inverter as texturas carregadas no eixo y
-    stbi_set_flip_vertically_on_load(true);
-    
-    // Carregar textura
-    int width, height, channels;
-    unsigned char *data = stbi_load("assets/textures/wall.jpg", &width, &height, &channels, 0);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        cout << "Falha ao carregar textura" << endl;
-    }
-    stbi_image_free(data);
+    ///// Definir parâmetros de filtragem de textura
+    ///glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    ///glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+
+    glGenerateMipmap(GL_TEXTURE_2D);
     // Desvincular VBO e VAO para não modificar acidentalmente
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
+    VAO->unbind();
+    VBO->unbind();
     // Habilitar teste do buffer de profundidade
     glEnable(GL_DEPTH_TEST);
 
@@ -187,16 +174,18 @@ void on_event(Window& win, Event e){
     if (e.type == EventType::KEYUP) {
         key_is_down[e.key] = false;
     }
-    
     if (e.type == EventType::MOUSEDOWN) {
         flag.mouse_lock = true;
     }    
-   if (e.type == EventType::MOUSEMOVE) {
+    if (e.type == EventType::MOUSEMOVE) {
+
         on_mouse(win,(f32)e.mouse.x, f32(e.mouse.y));
-        //win.set_mouse((int)(win.width() / 2.0f), (int)(win.height() / 2.0f));
     }
     if (e.type == EventType::RESHAPE) {
         glViewport(0, 0 ,win.width(), win.height());
+    }
+    if (e.type == EventType::MOUSEWHEEL) {
+        on_scroll(e.mouse.wheel.dir);
     }
     
    
@@ -218,7 +207,7 @@ void on_update(Window& win, f64 dt) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Vincular textura
-    glBindTexture(GL_TEXTURE_2D, texture);
+    texture->bind();
 
     // Definir qual Shader Program o OpenGL deve usar
     shader.bind();
@@ -228,14 +217,15 @@ void on_update(Window& win, f64 dt) {
     projection = mat4::perspective(radians(cam.fov), (float)win.width()/ (float)win.height(), 0.1f, 100.0f);
     // might need to transpose
     shader.uniform_mat4("projection", projection.data(),true);
-
+    
     // View Matrix
     mat4 view = mat4::identity();  
     view = mat4::lookat(cam.position, cam.position + cam.direction, cam.world_up);
     shader.uniform_mat4("view", view.data(), true);
 
     // Vincular Vertex Array Object
-    glBindVertexArray(VAO);
+    VAO->bind();
+    VBO->bind();
 
     for(unsigned int i = 0; i < 10; i++) {
         // Model Matrix
@@ -251,6 +241,7 @@ void on_update(Window& win, f64 dt) {
 
         // Desenhar triângulos a partir dos vertices
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawElements(GL_TRIANGLES, vi.count(), GL_UNSIGNED_INT, NULL);
     }
 
     // Trazer os "back buffers" para frente
@@ -258,16 +249,19 @@ void on_update(Window& win, f64 dt) {
 }
     
 
-
-void on_mouse(Window& win, f32 xposIn, f32 yposIn)
-{
-    persistent_data bool first_time = true;
+void on_mouse(Window& win, f32 xposIn, f32 yposIn) {
     persistent_data f32 lastX = 0.0f;
     persistent_data f32 lastY = 0.0f;
+    persistent_data bool first_time = true;
+    persistent_data bool handled = false;
+
+    
     f32 xpos = static_cast<f32>(xposIn);
     f32 ypos = static_cast<f32>(yposIn);
-
-    if (first_time ) {
+    if (handled) {
+        return;
+    }
+    if (first_time) {
         lastX = xpos;
         lastY = ypos;
         first_time = false;
@@ -280,22 +274,29 @@ void on_mouse(Window& win, f32 xposIn, f32 yposIn)
     if (!first_time && flag.mouse_lock) {
         u32 w = win.width();
         u32 h = win.height();
-        win.set_mouse((int)(w / 2.0f), (int)(h / 2.0f));
-        cam.on_mouse(xoffset,yoffset);
-        return;
+
+        //yoffset = f32((yoffset - h/2)/h);
+        //xoffset = f32((xoffset - w/2)/w);
+        //xoffset = f32((ypos - h/2)/h);
+        //yoffset = f32((xpos - w/2)/w);
+
+        //xoffset = f32((ypos - h/2)/h);
+        //yoffset = f32((xpos - w/2)/w);
+        //first_time = true;
+        if(flag.mouse_lock)
+            win.set_mouse((int)(w / 2.0f), (int)(h / 2.0f));
     }
     cam.on_mouse(xoffset,yoffset);
 
 }
 
-
 void on_scroll(f32 dir) {
     auto& fov = cam.fov;
-    fov -= (float)dir;
+    fov -= (f32)dir;
     if (fov < 1.0f)
         fov = 1.0f;
-    if (fov > 45.0f)
-        fov = 45.0f;
+    if (fov > 105.0f)
+        fov = 105.0f;
 }
 
 int main() {

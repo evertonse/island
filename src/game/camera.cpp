@@ -6,6 +6,8 @@
 #include "graphics/event.hpp"
 #include "game/defaults.h"
 
+// https://learnopengl.com/Getting-started/Camera
+
 using namespace cyx;
 namespace island {
     

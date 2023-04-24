@@ -5,7 +5,7 @@
 
 namespace cyx {
 
-    enum Cursor {
+    enum class Cursor {
         NONE,ARROW
     };
 
@@ -22,7 +22,7 @@ namespace cyx {
 		virtual auto set_width(u32 new_width) -> void = 0;
 		virtual auto set_height(u32 new_height) -> void = 0;
 
-        virtual auto set_mouse(Cursor cur) -> void = 0;
+        virtual auto set_cursor(Cursor cur) -> void = 0;
 		virtual auto set_mouse(i32 x, i32 y) -> void = 0;
 		virtual auto set_fullscreen(bool fullscreen) -> void = 0;
 		virtual auto set_title(const char* title) -> void = 0;

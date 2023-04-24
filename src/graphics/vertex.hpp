@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
-#include "glad.h"
+#include "glad/glad.h"
 #include "utils/common.h"
+#include "utils/log.hpp"
 #include "graphics/rendering.hpp"
 #include "graphics/vertex.hpp"
 
@@ -43,7 +44,7 @@ namespace cyx {
 	};
 	
 
-	struct VertexBufferAttr {
+	struct VertexAttr {
 		
 		enum Type {
 			None = 0, 
@@ -57,7 +58,7 @@ namespace cyx {
 		bool 	normalized = false;
 		u32 	offset = 0;
 
-		VertexBufferAttr(Type type, bool normalized = false) 
+		VertexAttr(Type type, bool normalized = false) 
 			:type(type),normalized(normalized)
 		{}
 
@@ -82,12 +83,29 @@ namespace cyx {
 			}
 			return 0;
 		}
+
+        static auto to_glenum_str(Type type) -> const char* {
+			switch (type) {
+				case Float:    return "GL_FLOAT";
+				case Float2:   return "GL_FLOAT";
+				case Float3:   return "GL_FLOAT";
+				case Float4:   return "GL_FLOAT";
+				case Mat3:     return "GL_FLOAT";
+				case Mat4:     return "GL_FLOAT";
+				case Int:      return "GL_INT  ";
+				case Int2:     return "GL_INT  ";
+				case Int3:     return "GL_INT  ";
+				case Int4:     return "GL_INT  ";
+				case Bool:     return "GL_BOOL ";
+			}
+			return 0;
+		}
 		
 		static auto size_of_type(Type type) -> u32 {
 			switch (type) {
 				case Float :  return 4;
 				case Float2:  return 4*2;
-				case Float3:  return 3*3;
+				case Float3:  return 4*3;
 				case Float4:  return 4*4;
 				
 				case Int   :  return 4;
@@ -128,24 +146,24 @@ namespace cyx {
 
 	};
 
-	class VertexBufferLayout {
+	class VertexLayout {
 	
 	public:
-		VertexBufferLayout();
+		VertexLayout();
 
-		VertexBufferLayout(std::initializer_list<VertexBufferAttr> attrs);
+		VertexLayout(std::initializer_list<VertexAttr> attrs);
 
-		auto attrs() -> const std::vector<VertexBufferAttr>&;
+		auto attrs() -> const std::vector<VertexAttr>&;
 		auto stride() const -> u32;
-		auto add(VertexBufferAttr& attr) -> void;
-		auto add(std::initializer_list<VertexBufferAttr> attrs) -> void;
-		auto add(VertexBufferAttr &&attr) -> void;
+		auto push(VertexAttr& attr) -> void;
+		auto push(std::initializer_list<VertexAttr> attrs) -> void;
+		auto push(VertexAttr &&attr) -> void;
 
 	private:
 		auto calculate() -> void;
 
 	private:
-		std::vector<VertexBufferAttr> _attrs;
+		std::vector<VertexAttr> _attrs;
 		u32 _stride = 0;
 	};
 
@@ -158,7 +176,7 @@ namespace cyx {
 		auto bind() const-> void;
 		auto unbind() const-> void;
 
-		auto add(VertexBuffer& vb , VertexBufferLayout& layout)-> void;
+		auto add(VertexBuffer& vb , VertexLayout& layout)-> void;
 	private:		
 		u32 _vertex_arrayID;
 		mutable bool _is_bound = false;

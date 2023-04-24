@@ -19,7 +19,7 @@ struct AccelCamera {
 
     vec3 velocity{0,0};
     vec3 acceleration{0,0};
-    vec3 world_up;
+    vec3 world_up{0,1.0f,0.0};
 
     f32 yaw;
     f32 pitch;
@@ -53,11 +53,11 @@ struct AccelCamera {
     }
 
     void update_vectors() {
-        vec3 front;
-        front.x = std::cos(radians(this->yaw)) * std::cos(radians(this->pitch));
-        front.y = std::sin(radians(this->pitch));
-        front.z = std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
-        this->direction = front.normalize();
+        vec3 dir;
+        dir.x = std::cos(radians(this->yaw)) * std::cos(radians(this->pitch));
+        dir.y = std::sin(radians(this->pitch));
+        dir.z = std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
+        this->direction = dir.normalize();
         this->right = vec3::cross(this->direction, this->world_up).normalize();  
         this->up = vec3::cross(this->right, this->direction).normalize();
     }
@@ -93,7 +93,7 @@ struct AccelCamera {
             acceleration.x += std::cos(radians(yaw + 90)) * PLAYER_SPEED;
             acceleration.z += std::sin(radians(yaw + 90)) * PLAYER_SPEED;
         }
-        if (key == Key::S) {
+        else if (key == Key::S) {
             acceleration += vec3::left(vec3(pitch,yaw,0.0)) * PLAYER_SPEED;
         }
         else if (key == Key::W) {
@@ -114,12 +114,17 @@ struct AccelCamera {
         }
     }
 
-    void on_mouse(f64 x, f64 y) {
-
+    void on_mouse(f64 x, f64 y, bool locked = false) {
         f64 xoffset = x * mouse_sensitivity;
         f64 yoffset = y * mouse_sensitivity;
-        this->yaw += xoffset;
-        this->pitch += yoffset;
+        if (locked) {
+            this->yaw  = xoffset;
+            this->pitch = yoffset;
+        }
+        else {
+            this->yaw += xoffset;
+            this->pitch += yoffset;
+        }
         
         if (this->pitch > 89.0f)
             this->pitch = 89.0f;

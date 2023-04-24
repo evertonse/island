@@ -6,11 +6,12 @@
 namespace cyx {
 	class Texture {
 	public:
+		Texture() {};
 		Texture(const char* filepath);
 		~Texture();
 
 		auto slot() -> u32;
-		auto bind(u32 slot = 0) const -> void;
+		auto bind() const -> void;
 		auto unbind() const -> void;
 		
 		auto enable() const -> void;
@@ -18,7 +19,8 @@ namespace cyx {
 		
 		auto width() const -> i32;
 		auto height() const -> i32;
-	
+        auto load(byte* texture_buffer, i32 width, i32 height) -> void;
+	    auto load(const char* filepath)-> void;
 	private:
 		u32 _texture_id;
 		const char* _filepath;

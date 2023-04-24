@@ -127,7 +127,9 @@ namespace cyx {
             auto&& app = GlutWindow::curr_app;
             auto win = GlutWindow::curr_win;
             Event& e = GlutWindow::event;
-
+            e.type = EventType::NONE;
+            persistent_data int lastx = x;
+            persistent_data int lasty = y;
             if (state == GLUT_UP) {
                 e.type = EventType::MOUSEUP; 
             }
@@ -147,13 +149,15 @@ namespace cyx {
                     break;
                 case 3:
                     e.type = EventType::MOUSEWHEEL;
-                    e.mouse.wheel.dir = 1;
+                    e.mouse.wheel.dir = +1;
                     break;
                 case 4:
                     e.type = EventType::MOUSEWHEEL;
-                    e.mouse.wheel.dir = -1;
+                    e.mouse.wheel.dir = -1 ;
                     break;
             }
+            lastx = x;
+            lasty = y;
             app->on_event(*win,e);
         });
 
@@ -161,6 +165,7 @@ namespace cyx {
             auto&& app = GlutWindow::curr_app;
             Event& e = GlutWindow::event;
             auto win = GlutWindow::curr_win;
+            e.type = EventType::NONE;
             e.mouse.x = x;
             e.mouse.y = y;
             e.type = EventType::MOUSEMOVE;
@@ -171,15 +176,18 @@ namespace cyx {
             auto&& app = GlutWindow::curr_app;
             Event& e = GlutWindow::event;
             auto win = GlutWindow::curr_win;
+            e.type = EventType::NONE;
             e.mouse.x = x;
             e.mouse.y = y;
             e.type = EventType::MOUSEMOVE;
             app->on_event(*win,e);
+            e.type = EventType::NONE;
         });
 
         glutSpecialFunc([](int key, int x, int y) {
             auto&& app = GlutWindow::curr_app;
             Event& e = GlutWindow::event;
+            e.type == EventType::KEYDOWN;
             auto win = GlutWindow::curr_win;
             switch (key)
             {
@@ -250,7 +258,7 @@ namespace cyx {
         glutWarpPointer(x, y);
     }
     
-    auto GlutWindow::set_mouse(Cursor cur) -> void {
+    auto GlutWindow::set_cursor(Cursor cur) -> void {
         if (cur ==  Cursor::NONE)
             glutSetCursor(GLUT_CURSOR_NONE);
         else {
@@ -275,10 +283,6 @@ namespace cyx {
         glutSwapBuffers();
     }
 
-    auto GlutWindow::set_cursor(int type) -> void {
-        glutSetCursor(type);
-    }
-
     auto GlutWindow::start() -> void {
         glutMainLoop();
     }
@@ -296,7 +300,7 @@ namespace cyx {
             glutFullScreen();
         } 
         else{
-            glutReshapeWindow(this->width(), this->height());
+            glutReshapeWindow(this->_width, this->_height);
         }
     }
     auto  GlutWindow::delay(u32 ms) -> void {

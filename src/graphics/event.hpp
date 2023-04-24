@@ -29,6 +29,7 @@ namespace cyx {
     };
 
     enum EventType {
+        NONE,
         QUIT,
         RESHAPE,
         MOUSEUP,

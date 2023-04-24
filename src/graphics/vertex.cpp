@@ -16,11 +16,12 @@ namespace cyx {
 		std::cout << "[VertexArray]" << "created and bound\n";
 	}
 	
-	auto VertexArray::add(VertexBuffer& vb , VertexBufferLayout& layout)-> void  {
-
+	auto VertexArray::add(VertexBuffer& vb , VertexLayout& layout)-> void  {
+        this->bind();
 		vb.bind();
 		auto& attrs = layout.attrs();
-		for (size_t i = 0; i < attrs.size(); i++) {
+        auto count = attrs.size();
+		for (size_t i = 0; i < count; i++) {
 			
 			const auto& attr = attrs[i];
 
@@ -36,13 +37,22 @@ namespace cyx {
 				glVertexAttribPointer(
 					i,
 					attr.count(),
-					VertexBufferAttr::to_glenum(attr.type),
+					VertexAttr::to_glenum(attr.type),
 					attr.normalized ? GL_TRUE : GL_FALSE,
 					layout.stride(),
 					(const void*) attr.offset
 				)
 			);
+            out << "i:" << i << '\n';
+            out << "attrVout:" << attr.count() << '\n';
+            out << "VertexAttr:" << VertexAttr::to_glenum_str(attr.type) << '\n';
+            out << "attr.normlized?:" << (attr.normalized ? "GL_TRUE " : "GL_FALSE") << '\n';
+            out << "layout.stride():" << layout.stride() << '\n';
+            out << "(const void*) :" << attr.offset  << '\n';
+            out << '\n';
 		}
+        vb.unbind();
+        this->unbind();
 	}
 
 	VertexArray::~VertexArray() {
@@ -70,10 +80,10 @@ namespace cyx {
 
 	
 	// *------------------------------------------------------------------------------
-	// | START	VertexBufferAttr																							
+	// | START	VertexAttr																							
 	// *------------------------------------------------------------------------------
-	auto VertexBufferAttr::size() const -> u32 const 	 { return size_of_type(type);}
-	auto VertexBufferAttr::count() const -> u32 const  { return count_of_type(type);}
+	auto VertexAttr::size() const -> u32 const 	 { return size_of_type(type);}
+	auto VertexAttr::count() const -> u32 const  { return count_of_type(type);}
 
 	// x------------------------------------------------------------------------------
 	// | END
@@ -81,38 +91,38 @@ namespace cyx {
 	
 
 	// *------------------------------------------------------------------------------
-	// | START	VertexBufferLayout																							
+	// | START	VertexLayout																							
 	// *------------------------------------------------------------------------------
-		VertexBufferLayout::VertexBufferLayout() {};
+		VertexLayout::VertexLayout() {};
 
-		VertexBufferLayout::VertexBufferLayout(std::initializer_list<VertexBufferAttr> attrs)
+		VertexLayout::VertexLayout(std::initializer_list<VertexAttr> attrs)
 			: _attrs(attrs) 
 		{
 			calculate();
 		}
 
-		auto VertexBufferLayout::attrs() -> const std::vector<VertexBufferAttr>& { 
+		auto VertexLayout::attrs() -> const std::vector<VertexAttr>& { 
 			calculate();
 			return _attrs; 
 		}
 		
-		auto VertexBufferLayout::stride() const -> u32 { return _stride; }
+		auto VertexLayout::stride() const -> u32 { return _stride; }
 		
-		auto VertexBufferLayout::add(VertexBufferAttr& attr) -> void {
+		auto VertexLayout::push(VertexAttr& attr) -> void {
 			this->_attrs.push_back(attr);
 		}
 
-		auto VertexBufferLayout::add(std::initializer_list<VertexBufferAttr> attrs) -> void {
+		auto VertexLayout::push(std::initializer_list<VertexAttr> attrs) -> void {
 			for (auto &&attr : attrs) {
 				this->_attrs.push_back(attr);
 			}
 		}
 
-		auto VertexBufferLayout::add(VertexBufferAttr&& attr) -> void {
+		auto VertexLayout::push(VertexAttr&& attr) -> void {
 			this->_attrs.push_back(attr);
 		}
 
-		auto VertexBufferAttr::to_string() const -> const std::string {
+		auto VertexAttr::to_string() const -> const std::string {
 			std::stringstream tostring;
 			
 			tostring 
@@ -125,15 +135,15 @@ namespace cyx {
 			return tostring.str();
 		}
 
-		auto VertexBufferLayout::calculate() -> void {
+		auto VertexLayout::calculate() -> void {
 			size_t offset = 0;
 			_stride = 0;
 			
 			for (auto& attr : _attrs) {
 				attr.offset = offset;
-				
-				offset  += attr.size();
-				_stride += attr.size();
+                size_t size = attr.size(); 
+				offset  += size;
+				_stride += size;
 			}
 		}
 
