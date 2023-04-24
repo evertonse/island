@@ -9,6 +9,7 @@
 #include "platform/glut_window.cpp"
 #include "graphics/mesh.cpp"
 
+#include "game/camera_accelerated.cpp"
 #include "game/camera.cpp"
 #include "game/cube.cpp"
 #include "game/player.cpp"

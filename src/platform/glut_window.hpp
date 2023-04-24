@@ -28,6 +28,7 @@ class GlutWindow  : public Window {
         auto height() -> u32 override;
         auto width() -> u32 override;
 
+        auto set_mouse(Cursor cur) -> void override;
 		auto set_width(u32 new_width) -> void override;
 
         auto set_mouse(i32 x, i32 y) -> void override;

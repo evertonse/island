@@ -2,18 +2,13 @@
 #include <cmath>
 #include <numbers>
 #include "math/vec.hpp"
+#include "math/mat.hpp"
 #include "graphics/event.hpp"
+#include "game/defaults.h"
 
 using namespace cyx;
 namespace island {
     
-//  Default Values
-const f32 YAW = -90.0f;
-const f32 PITCH = 0.0f;
-
-const f32 SPEED = 5.3f;
-const f32 SENSITIVITY = 0.25f;
-const f32 FOV = 75.0f;
 
 struct Camera {
 
@@ -87,6 +82,10 @@ struct Camera {
         this->direction = front.normalize();
         this->right = vec3::cross(this->direction, this->world_up).normalize();  
         this->up = vec3::cross(this->right, this->direction).normalize();
+    }
+
+    void on_tick(f32 dt) {
+
     }
 
     void on_key(Key key, f32 dt) {

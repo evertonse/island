@@ -1,4 +1,5 @@
 #include "platform/glut_window.hpp"
+#include "glut_window.hpp"
 
 namespace cyx {
 
@@ -247,6 +248,14 @@ namespace cyx {
 
     auto GlutWindow::set_mouse(i32 x, i32 y) -> void {
         glutWarpPointer(x, y);
+    }
+    
+    auto GlutWindow::set_mouse(Cursor cur) -> void {
+        if (cur ==  Cursor::NONE)
+            glutSetCursor(GLUT_CURSOR_NONE);
+        else {
+            glutSetCursor(GLUT_CURSOR_LEFT_ARROW);
+        }
     }
 
     auto GlutWindow::set_title(const char* title) -> void {

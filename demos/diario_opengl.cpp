@@ -31,7 +31,7 @@ vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
 vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
 vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
-Camera cam(cameraPosition,cameraUp);
+AccelCamera cam(cameraPosition,cameraUp);
 f64 delta_time = 0.0f;
 unsigned int texture;
 unsigned int VBO;
@@ -209,6 +209,7 @@ void on_update(Window& win, f64 dt) {
             cam.on_key(item.first, delta_time);
         }
     }
+    cam.on_tick(dt);
     delta_time = dt;
     // Especificar os valores de vermelho, verde, azul e alfa, para limpar os buffers de cores
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
