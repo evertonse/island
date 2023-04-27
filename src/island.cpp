@@ -53,10 +53,10 @@ SimpleTexture tex_horse;
 SimpleTexture tex_goblin;
 SimpleTexture tex_tiger;
 
-TripleBufferMesh goblin;
 TripleBufferMesh tiger;
 TripleBufferMesh cube;
 
+Model goblin;
 //TriangularMesh tri_mesh;
 
 // Vertices dos triângulos
@@ -149,11 +149,11 @@ auto on_create(Window& win) {
 
     tex_wall.load("assets/textures/wall.jpg");
     tex_horse.load("assets/textures/tex_horse.png");
-    tex_goblin.load("assets/textures/tex_goblin.png");
     tex_tiger.load("assets/textures/tiger_white.png");
-
-    TripleBufferMesh::goblin(&goblin);
+    goblin.texture.load("assets/textures/tex_goblin.png");
+    TripleBufferMesh::goblin(&goblin.mesh);
     TripleBufferMesh::tiger(&tiger);
+    TripleBufferMesh::cube(&cube);
 
     // Desvincular VBO e VAO para não modificar acidentalmente
     VAO->unbind();

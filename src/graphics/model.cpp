@@ -1,4 +1,4 @@
-#include "game/model.hpp"
+#include "graphics/model.hpp"
 
 void cyx::Model::load(const char *mesh_path, const char *texture_path)
 {

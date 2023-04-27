@@ -15,5 +15,5 @@
 # Commands:
 - ``w,s,d,a``  forward, backward, sideways movement
 - ``click`` and ``drag`` to control the view direction
-- ``space,q`` to go up (couldn't resolve the crlt glut problem) 
--  ``e`` to go down
+- ``space,q`` to go up 
+-  ``e`` to go down (couldn't resolve the crlt glut problem, so cant use crtl to go down) 
