@@ -1,4 +1,4 @@
-#include "vertex.hpp"
+#include "graphics/vertex.hpp"
 
 namespace cyx {
 
@@ -61,7 +61,7 @@ namespace cyx {
     
 	auto VertexArray::bind() const  -> void {
 
-		std::cout << "[VertexArray]" << "bound\n";
+        assert(_vertex_arrayID != 0);
 		glBindVertexArray(_vertex_arrayID);
 		_is_bound = true;
 	}
@@ -69,7 +69,6 @@ namespace cyx {
 	auto VertexArray::unbind() const -> void{
 
 		glBindVertexArray(0);
-		std::cout << "[VertexArray]" << "unbound\n";
 		_is_bound = false;
 	}
 
@@ -180,6 +179,7 @@ namespace cyx {
 		bind();
 		glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 		std::cout << "[VertexBuffer]" << "data set\n";
+        unbind();
 	}
 
 	auto VertexBuffer::bind()  -> void{
@@ -251,6 +251,7 @@ namespace cyx {
 		set_count(u32(size / sizeof(u32)));
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW);
 		std::cout << "[VertexIndex]" << "data set\n";
+        unbind();
 	}
 
 	auto VertexIndex::bind() const -> void {

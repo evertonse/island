@@ -177,6 +177,7 @@ namespace cyx {
 		auto unbind() const-> void;
 
 		auto add(VertexBuffer& vb , VertexLayout& layout)-> void;
+        operator u32 () {return this->_vertex_arrayID;}
 	private:		
 		u32 _vertex_arrayID;
 		mutable bool _is_bound = false;

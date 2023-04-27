@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath>
-#include <numbers>
 #include "math/vec.hpp"
 #include "math/mat.hpp"
 #include "graphics/event.hpp"
@@ -99,10 +98,10 @@ struct AccelCamera {
         else if (key == Key::W) {
             acceleration += vec3::right(vec3(pitch,yaw,0.0)) * PLAYER_SPEED;
         }
-        else if (key == Key::E) {
+        else if ((key == Key::E) || (key == Key::CTRL)) {
             acceleration.y -= PLAYER_SPEED * 2;
         }
-        else if (key == Key::SPACE){
+        else if (key == Key::Q || key == Key::SPACE){
             acceleration.y += PLAYER_SPEED * 2.1;
         }    
 

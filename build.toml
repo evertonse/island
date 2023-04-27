@@ -4,7 +4,7 @@ version   = "c++20"
 
 #-O
 #optimize = "off"
-optimize = "off"
+optimize = "on"
 
 #debug = "on"
 debug = "off"
@@ -12,7 +12,7 @@ debug = "off"
 binpath = "bin/"
 
 srcfiles = [
-    "src/main.cpp",
+  "src/main.cpp",
 ]
 
 # -D
@@ -40,7 +40,7 @@ libfiles = [
   "user32",
   "gdi32",
   "glu32",
-  "opengl32",
+  #"opengl32",
 ]
 
 # -W

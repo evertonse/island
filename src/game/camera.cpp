@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath>
-#include <numbers>
 #include "math/vec.hpp"
 #include "math/mat.hpp"
 #include "graphics/event.hpp"

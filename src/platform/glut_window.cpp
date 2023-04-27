@@ -17,6 +17,7 @@ namespace cyx {
         int argc = 0;
         char* argv[1] = { (char*)"" };
         glutInit(&argc, argv);
+        this->app->on_init(*this); // OBS  can1t call gl functions from here
         
         glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH |GLUT_MULTISAMPLE);
         glutInitWindowPosition(
@@ -30,6 +31,7 @@ namespace cyx {
         glutCreateWindow(title);
         this->app->on_create(*this);
 
+        //gladLoadGL();
         glutDisplayFunc( [](){
             auto& app = GlutWindow::curr_app;
             auto win = GlutWindow::curr_win;

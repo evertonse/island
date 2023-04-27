@@ -10,8 +10,8 @@ namespace cyx {
 		Texture(const char* filepath);
 		~Texture();
 
-		auto slot() -> u32;
-		auto bind() const -> void;
+		auto slot() const -> u32;
+		auto bind(u32 slot=0) const -> void;
 		auto unbind() const -> void;
 		
 		auto enable() const -> void;
@@ -21,11 +21,18 @@ namespace cyx {
 		auto height() const -> i32;
         auto load(byte* texture_buffer, i32 width, i32 height) -> void;
 	    auto load(const char* filepath)-> void;
-	private:
+    public:
 		u32 _texture_id;
+	private:
 		const char* _filepath;
 		byte* _buffer;
 		i32 _width,_height, _bits_per_pixel;
-		mutable u32 _slot = 0;
+		mutable u32 _slot = -1;
 	};
+
+    struct SimpleTexture {
+        u32 id;
+        void load(const char* filepath);
+        void bind();
+    };
 }

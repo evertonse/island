@@ -3,3 +3,5 @@ vendor/SDL/
 vendor/SDL
 **.bat
 **.exe
+__pycache__
+assets/ignore

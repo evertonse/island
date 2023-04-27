@@ -3,7 +3,6 @@
 using namespace cyx;
 namespace island {
     struct Block {
-
         // Define the cube's geometry vertices
         std::array<f32,8*3> vertices = {
             // front face

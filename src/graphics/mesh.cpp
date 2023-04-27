@@ -1,6 +1,7 @@
 #include "mesh.hpp"
+
 namespace cyx {
-    auto TriangularMesh::alloc_mesh(i32 vertices_count,i32 normals_count, i32 uvs_count, i32 faces_count) {
+    auto TriangularMesh::alloc_mesh(u32 vertices_count,u32 normals_count, u32 uvs_count, u32 faces_count) {
         this-> vertices_count = vertices_count;
         this-> normals_count = normals_count;
         this-> uvs_count = uvs_count;
@@ -28,13 +29,11 @@ namespace cyx {
         allocated = false;
     }
 
-    auto TriangularMesh::from_obj(const char* filename, bool normalize)  -> TriangularMesh* {
-        TriangularMesh* mesh =  new TriangularMesh;
+    auto TriangularMesh::load(const char* filename, bool normalize, bool auto_init)  -> TriangularMesh& {
         f32 max_val = 0;
         std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Failed to open file: " << filename << std::endl;
-        }
+        
+        assert(file.is_open() && "Failed to open file: ");
 
         // Read the vertex and face data
         std::vector<vec3> vertices;
@@ -128,6 +127,7 @@ namespace cyx {
                 normals.push_back(normal);
             }
         }
+
         if (normalize) {
             for (auto&& v: vertices) {
                 v  /= max_val;
@@ -140,23 +140,56 @@ namespace cyx {
             << "uvs.size = " << uvs.size() << '\n'
             << "faces.size = "<< faces.size();
 
-        // Allocate memory for the mesh
-        mesh->alloc_mesh(
+        // Allocate memory for the this
+        this->alloc_mesh(
             vertices.size(), 
             normals.size(), 
             uvs.size(), 
             faces.size()
         );
 
-        // Copy the vertex and index data into the mesh
-        memcpy(mesh->vertices, vertices.data(), vertices.size() * sizeof(mesh->vertices[0]));
-        memcpy(mesh->normals, normals.data(), normals.size() * sizeof(mesh->normals[0]));
-        memcpy(mesh->uvs, uvs.data(), uvs.size() * sizeof(mesh->normals[0]));
-        memcpy(mesh->faces, faces.data(), faces.size() * sizeof(mesh->faces[0]));
+        // Copy the vertex and index data into the this
+        memcpy(this->vertices, vertices.data(), vertices.size() * sizeof(this->vertices[0]));
+        memcpy(this->normals, normals.data(), normals.size() * sizeof(this->normals[0]));
+        memcpy(this->uvs, uvs.data(), uvs.size() * sizeof(this->normals[0]));
+        memcpy(this->faces, faces.data(), faces.size() * sizeof(this->faces[0]));
 
-        // Close the file and return the mesh
+        // Close the file and return the this
         file.close();
-        return mesh;
+        if (auto_init){
+            this->init();
+        }
+        return *this;
+    }
+
+    void TriangularMesh::init() {
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+        // 3 buffers because  easier
+        glGenBuffers(vbo_count, vbo);
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+            glBufferData(GL_ARRAY_BUFFER, vertices_count* sizeof(vertices[0]), (f32*)vertices, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+            glBufferData(GL_ARRAY_BUFFER, normals_count * sizeof(normals[0]), (f32*)normals, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+            glBufferData(GL_ARRAY_BUFFER, uvs_count * sizeof(uvs[0]), (f32*)uvs, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+    }
+
+    void TriangularMesh::draw() {
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices_count);
     }
 
 
@@ -171,6 +204,377 @@ namespace cyx {
         }
         tokens.push_back(str.substr(prev_pos, pos - prev_pos));
         return tokens;
+    }
+
+//*********************** ---------------- ***********************//
+//*********************** TripleBufferMesh ***********************//
+//*********************** ---------------- ***********************//
+
+    TripleBufferMesh::TripleBufferMesh() : vbo { 0 }
+    {
+        vao = nullbuffer;
+
+        verts.clear();
+        uvs.clear();
+        normals.clear();
+    }
+
+    TripleBufferMesh::TripleBufferMesh(std::string fname)
+    {
+        load(fname);
+    }
+
+    TripleBufferMesh::~TripleBufferMesh()
+    {
+        glDeleteBuffers(vbo_count, vbo);
+        glDeleteVertexArrays(1, &vao);
+    }
+
+    void TripleBufferMesh::load(std::string filepath)
+    {
+        std::ifstream fin(filepath);
+        if (!fin) 
+        {
+            vao    = nullbuffer;
+            vbo[0] = nullbuffer;
+            vbo[1] = nullbuffer;
+            vbo[2] = nullbuffer;
+            std::cout << filepath << " Could not be open !";
+            assert(0 && " Could not load mesh  because file could not be open");
+            return;
+        }
+
+        //Temporaries
+        std::vector<f32> vert_palette;
+        std::vector<f32> uv_palette;
+        bool is3DTex = false;
+
+        //Read the file
+        std::string line;
+        while (!fin.eof()) {
+            std::getline(fin, line);
+        
+            if (line.find("v ") == 0) {
+                std::stringstream ss(line.c_str() + 2);
+                f32 x, y, z;
+                ss >> x >> y >> z;
+                vert_palette.push_back(x);
+                vert_palette.push_back(y);
+                vert_palette.push_back(z);
+            }
+
+            else if (line.find("vt ") == 0) {
+                std::stringstream ss(line.c_str() + 3);
+                f32 u, v, w;
+                ss >> u >> v >> w;
+                uv_palette.push_back(u);
+                uv_palette.push_back(v);
+                if (!ss.fail()) {
+                    uv_palette.push_back(w);
+                    is3DTex = true;
+                }
+            }
+
+            else if (line.find("c ") == 0) {
+                u32 a = 0, b = 0, c = 0;
+                if (line[2] == '*') {
+                    const u32 v_ix = (u32)vert_palette.size() / 3;
+                    a = v_ix - 2; b = v_ix - 1; c = v_ix;
+                }
+                else {
+                    std::stringstream ss(line.c_str() + 2);
+                    ss >> a >> b >> c;
+                }
+                const vec3 v1(&vert_palette[(a - 1) * 3]);
+                const vec3 v2(&vert_palette[(b - 1) * 3]);
+                const vec3 v3(&vert_palette[(c - 1) * 3]);
+            }
+
+            else if (line.find("f ") == 0) {
+                //Count the slashes
+                int num_slashes = 0;
+                size_t last_slash_ix = 0;
+                bool doubleslash = false;
+                for (size_t i = 0; i < line.size(); ++i) {
+                    if (line[i] == '/') {
+                        line[i] = ' ';
+                        if (last_slash_ix == i - 1) {
+                            assert(vert_palette.size() == uv_palette.size() || uv_palette.empty());
+                            doubleslash = true;
+                        }
+                        last_slash_ix = i;
+                        num_slashes++;
+                    }
+                }
+                u32 a = 0, b = 0, c = 0, d = 0;
+                u32 at = 0, bt = 0, ct = 0, dt = 0;
+                u32 _tmp;
+                std::stringstream ss(line.c_str() + 2);
+                const bool wild = (line[2] == '*');
+                const bool wild2 = (line[3] == '*');
+                bool is_quad = false;
+
+                //Interpret face based on slash
+                if (wild) 
+                {
+                    assert(num_slashes == 0);
+                    const u32 v_ix = (u32)vert_palette.size() / 3;
+                    const u32 t_ix = (u32)uv_palette.size() / (is3DTex ? 3 : 2);
+                    if (wild2) 
+                    {
+                        a = v_ix - 3; b = v_ix - 2; c = v_ix - 1; d = v_ix - 0;
+                        at = t_ix - 3; bt = t_ix - 2; ct = t_ix - 1; dt = t_ix - 0;
+                        is_quad = true;
+                    }
+                    else
+                    {
+                        a = v_ix - 2; b = v_ix - 1; c = v_ix;
+                        at = t_ix - 2; bt = t_ix - 1; ct = t_ix;
+                    }
+                }
+                else if (num_slashes == 0) 
+                {
+                    ss >> a >> b >> c >> d;
+                    at = a; bt = b; ct = c; dt = d;
+                    if (!ss.fail()) {
+                        is_quad = true;
+                    }
+                }
+                else if (num_slashes == 3) 
+                {
+                    ss >> a >> at >> b >> bt >> c >> ct;
+                }
+                else if (num_slashes == 4)
+                {
+                    is_quad = true;
+                    ss >> a >> at >> b >> bt >> c >> ct >> d >> dt;
+                }
+                else if (num_slashes == 6) 
+                {
+                    if (doubleslash) {
+                        ss >> a >> _tmp >> b >> _tmp >> c >> _tmp;
+                        at = a; bt = b; ct = c;
+                    }
+                    else 
+                    {
+                        ss >> a >> at >> _tmp >> b >> bt >> _tmp >> c >> ct >> _tmp;
+                    }
+                }
+                else if (num_slashes == 8) 
+                {
+                    is_quad = true;
+                    if (doubleslash) 
+                    {
+                        ss >> a >> _tmp >> b >> _tmp >> c >> _tmp >> d >> _tmp;
+                        at = a; bt = b; ct = c; dt = d;
+                    }
+                    else 
+                    {
+                        ss >> a >> at >> _tmp >> b >> bt >> _tmp >> c >> ct >> _tmp >> d >> dt >> _tmp;
+                    }
+                }
+                else 
+                {
+                    assert(false);
+                    continue;
+                }
+
+                //Add face to list
+                if (is3DTex) {
+                    std::cout << "Texture from " << filepath 
+                            << " is 3D, You have no Support right now to hanlde that\n"
+                            << std::cin.get();
+                }
+                add_face(vert_palette, uv_palette, a, at, b, bt, c, ct, is3DTex);
+                if (is_quad)
+                {
+                    add_face(vert_palette, uv_palette, c, ct, d, dt, a, at, is3DTex);
+                }
+            }
+        }
+
+        init_gl();
+        std::cout << "Mesh loaded from " << filepath
+            << "verts.size():" << verts.size() << " \n"
+            << "uvs.size():" << uvs.size() << " \n"
+            << "normals.size():" << normals.size() << " \n"
+            << "\n";
+        return;
+    }
+
+        void TripleBufferMesh::clear()
+        {
+            glDeleteBuffers(vbo_count, vbo);
+            glDeleteVertexArrays(1, &vao);
+        }
+
+        void TripleBufferMesh::draw() {
+            glBindVertexArray(vao);
+            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
+        }
+
+        void TripleBufferMesh::from(
+            TripleBufferMesh *self,
+            const f32 vertices[][3],
+            const f32 normals[][3],
+            const f32 uvs[][2],
+            const u32* indexes,
+            const u32 indexes_count
+        ){
+
+            self->verts   = std::vector<f32>();
+            self->normals = std::vector<f32>();
+            self->uvs     = std::vector<f32>();
+
+            for (size_t it = 0; it < indexes_count; it++) {
+                u32 i = indexes[it];
+                for (size_t j = 0; j < 3; j++) {
+                    self->verts.push_back(vertices[i][j]);
+                    self->normals.push_back(normals[i][j]);
+                    if (j < 2) {
+                        self->uvs.push_back(uvs[i][j]);
+                    }
+                }
+            }
+            assert(self->verts.size() == self->normals.size());
+            assert(self->uvs.size() == (2*self->normals.size())/3);
+            self->init_gl();
+            
+        }
+
+        void TripleBufferMesh::goblin(TripleBufferMesh *self) {
+            from(
+            self,
+            goblin_objVerts,
+            goblin_objNormals,
+            goblin_objTexCoords, 
+            goblin_objIndexes,
+            goblin_objIndexesCount
+            );
+        }
+
+        void TripleBufferMesh::tiger(TripleBufferMesh *self) {
+            from(
+            self,
+            tiger_objVerts,
+            tiger_objNormals,
+            tiger_objTexCoords, 
+            tiger_objIndexes,
+            tiger_objIndexesCount
+            );
+        }
+
+        void TripleBufferMesh::horse(TripleBufferMesh *self) {
+            from(
+            self,
+            horse_objVerts,
+            horse_objNormals,
+            horse_objTexCoords, 
+            horse_objIndexes,
+            horse_objIndexesCount
+            );
+        }
+
+        void TripleBufferMesh::cube(TripleBufferMesh *self) {
+            from(
+            self,
+            cube_objVerts,
+            cube_objNormals,
+            cube_objTexCoords, 
+            cube_objIndexes,
+            cube_objIndexesCount
+            );
+        }
+
+        void TripleBufferMesh::bamboo(TripleBufferMesh *self) {
+            from(
+            self,
+            bamboo_objVerts,
+            bamboo_objNormals,
+            bamboo_objTexCoords, 
+            bamboo_objIndexes,
+            bamboo_objIndexesCount
+            );
+        }
+
+        void TripleBufferMesh::init_gl() {
+            glGenVertexArrays(1, &vao);
+            glBindVertexArray(vao);
+            // 3 buffers because  easier
+            glGenBuffers(vbo_count, vbo);
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+                glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(verts[0]), verts.data(), GL_STATIC_DRAW);
+                glEnableVertexAttribArray(0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            }
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+                glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(normals[0]), normals.data(), GL_STATIC_DRAW);
+                glEnableVertexAttribArray(1);
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+            }
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+                glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(uvs[0]), uvs.data(), GL_STATIC_DRAW);
+                glEnableVertexAttribArray(2);
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+            }
+        }
+
+
+    void TripleBufferMesh::add_face(const std::vector<f32>& vert_palette, const std::vector<f32>& uv_palette,
+        u32 a, u32 at, u32 b, u32 bt, u32 c, u32 ct, bool is3DTex)
+    {
+        //Merge texture and vertex indicies
+        assert(a > 0 && b > 0 && c > 0);
+        assert(at > 0 && bt > 0 && ct > 0);
+        a -= 1; b -= 1; c -= 1;
+        at -= 1; bt -= 1; ct -= 1;
+        const u32 v_ix[3] = { a, b, c };
+        const u32 uv_ix[3] = { at, bt, ct };
+
+        //Calcuate the normal for this face
+        vec3 v1(&vert_palette[a * 3]);
+        vec3 v2(&vert_palette[b * 3]);
+        vec3 v3(&vert_palette[c * 3]);
+        vec3 dv1 = v2 - v1;
+        vec3 dv2 = v3 - v1;
+        vec3 normal = vec3::cross(dv1, dv2).normalize();
+
+        for (int i = 0; i < 3; ++i) 
+        {
+            const u32 v = v_ix[i];
+            const u32 vt = uv_ix[i];
+            assert(v < vert_palette.size() / 3);
+            verts.push_back(vert_palette[v * 3]);
+            verts.push_back(vert_palette[v * 3 + 1]);
+            verts.push_back(vert_palette[v * 3 + 2]);
+            if (!uv_palette.empty()) 
+            {
+                if (is3DTex) 
+                {
+                    assert(vt < uv_palette.size() / 3);
+                    uvs.push_back(uv_palette[vt * 3]);
+                    uvs.push_back(uv_palette[vt * 3 + 1]);
+                    uvs.push_back(uv_palette[vt * 3 + 2]);
+                }
+                else 
+                {
+                    assert(vt < uv_palette.size() / 2);
+                    uvs.push_back(uv_palette[vt * 2]);
+                    uvs.push_back(uv_palette[vt * 2 + 1]);
+                }
+            }
+            else 
+            {
+                uvs.push_back(0.0f);
+                uvs.push_back(0.0f);
+            }
+            normals.push_back(normal.x);
+            normals.push_back(normal.y);
+            normals.push_back(normal.z);
+        }
     }
 }	
 

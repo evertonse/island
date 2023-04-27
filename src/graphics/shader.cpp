@@ -2,9 +2,10 @@
 #include "shader.hpp"
 
 namespace cyx {
-    static void ASSERT_SHADER(int location,const char* var) {
+    static void SHADER_ASSERT_LOCATION(int location,const char* filepath,const char* var) {
         if (location == -1) {
-			std::cout << "[Shader]: BAD uniform Location for uniform mat4 " << var  << "\n";
+			std::cout << "[Shader]:" << filepath <<" BAD uniform Location for uniform: " << var  << "\n";
+            exit(1);
 		}
     }
 
@@ -16,6 +17,7 @@ namespace cyx {
 
 	Shader::Shader(const char* filepath)
 	{
+        this->_filepath = filepath;
 		if (filepath == NULL) {
 				set_default(ShaderType::VERTEX);
 				set_default(ShaderType::FRAGMENT);
@@ -75,18 +77,20 @@ namespace cyx {
 	Shader::Shader(const char* vertex_path, const char* frag_path)
     :_vertex_source(read_file(vertex_path)),_fragment_source(read_file(frag_path)) { }
 
-    Shader::Shader(const std::string &vertex_src, const std::string &frag_src)
-	:_vertex_source(vertex_src.c_str()),
-			_fragment_source(frag_src.c_str())
+   Shader Shader::from_src(const std::string &vertex_src, const std::string &frag_src)
 	{
+        Shader self;
+	    self._vertex_source  = vertex_src;
+		self._fragment_source = frag_src;
 		if (vertex_src == "") {
-				set_default(ShaderType::VERTEX);
-				std::cout << "[Shader] Vertex Source in NULL \n";
+				self.set_default(ShaderType::VERTEX);
+                assert(0 && "[Shader] Vertex Source in NULL \n");
 		}    
 		if (frag_src == "") {
-				set_default(ShaderType::FRAGMENT);
+				self.set_default(ShaderType::FRAGMENT);
 				std::cout << "[Shader] Fragment Source in NULL \n";
 		}
+        return self;
     }
 
     Shader::~Shader()
@@ -97,24 +101,30 @@ namespace cyx {
 	auto Shader::compile() -> void {
 		if (create_program(this->_vertex_source.c_str(), this->_fragment_source.c_str())) {
 				std::cout << "[Shader] PROGRAM SUCESSFULLY CREATED\n";
+                this->_is_compiled = true;
 		}
 	}
 
+    auto Shader::is_compiled() -> bool {
+        return this->_is_compiled;
+    }
+
 
 	auto Shader::bind() const -> void {
-
-			glUseProgram(_programID);
-
+		glUseProgram(_programID);
 	}
 
-	auto Shader::unbind() const -> void
-	{
+	auto Shader::unbind() const -> void {
 		glUseProgram(0);
 	}
 
-	auto Shader::src(ShaderType type) -> const char*
-	{
-		return nullptr;
+	auto Shader::src(ShaderType type) -> const char* {
+        if (type == ShaderType::FRAGMENT)
+            return _fragment_source.c_str();
+        else if(type == ShaderType::VERTEX)
+            return _vertex_source.c_str();
+        else 
+            return nullptr;
 	}
 
 	auto Shader::compile_shader(u32 type, const char* src) -> u32 {
@@ -136,9 +146,13 @@ namespace cyx {
 					return false;
 				}
 		}
-
-		glShaderSource(shader, 1, &src, NULL);
-		glCompileShader(shader);
+        glLogCall(
+            glShaderSource(shader, 1, &src, NULL)
+        );
+		
+        glLogCall(
+            glCompileShader(shader);
+        );
 		// check for error
 		i32 sucess;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &sucess);
@@ -235,48 +249,41 @@ namespace cyx {
 		return true;
 	}
 
-	auto Shader::uniform_float4(const char* var, f32* values) -> void {
+	auto Shader::uniform_vec4(const char* var, f32* values) -> void {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniform4f(location, values[0], values[1], values[2], values[4]);
-		if (location != -1)
-			std::cout << "[Shader]: uniform float4 set " << "\n";
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 	}
 
 	auto Shader::uniform_mat4(const char *var, f32* values, bool transpose) -> void {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniformMatrix4fv(location,1, transpose?GL_TRUE:GL_FALSE, values);
-        ASSERT_SHADER(location,var);
-		
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 		
 	}
 
-	auto Shader::uniform_int1(const char *var, i32 value) -> void
-	{
+	auto Shader::uniform_int(const char *var, i32 value) -> void {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniform1i(location, value);
-		
-		if (location != -1) {
-			std::cout << "[Shader]: uniform float4 set " << "\n";
-		}
-		else {
-			std::cout << "[Shader]: BAD uniform Location for uniform float 4 " << "\n";
-			
-		}
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 	}
 
-	auto Shader::uniform_float3(const char* var, f32* values) -> void {
+	auto Shader::uniform_vec3(const char* var, f32* values) -> void {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniform3f(location, values[0], values[1], values[2]);
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 	}
 
-	auto Shader::uniform_float2(const char* var, f32* values) -> void {
+	auto Shader::uniform_vec2(const char* var, f32* values) -> void {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniform2f(location, values[0], values[1]);
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 	}
 
 	auto Shader::uniform_float(const char* var, f32 value) -> void {
 		i32 location = glGetUniformLocation(_programID, var);
 		glUniform1f(location, value);
+        SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
 	}
 
 

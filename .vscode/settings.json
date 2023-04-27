@@ -57,6 +57,7 @@
     "limits": "cpp",
     "numbers": "cpp",
     "cinttypes": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "set": "cpp"
 }
 }

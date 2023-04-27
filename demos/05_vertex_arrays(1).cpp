@@ -47,8 +47,8 @@ void display(void)
    glEnableClientState(GL_VERTEX_ARRAY);
    
    //associa dados aos arrays
-   glColorPointer (3, GL_FLOAT, 0, colors);
-   glVertexPointer (3, GL_FLOAT, 0, vertices);
+   glColorPointer   (3, GL_FLOAT, 0, colors);
+   glVertexPointer  (3, GL_FLOAT, 0, vertices);
 
    //Formas de desenho
 

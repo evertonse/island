@@ -17,11 +17,12 @@
 #include "graphics/shader.hpp"
 
 #include "graphics/mesh.hpp"
+#include "graphics/texture.hpp"
 #include "graphics/event.hpp"
 #include "graphics/application.hpp"
 #include "graphics/window.hpp"
 
 #include "game/world/entity.hpp"
-#include "game/player.hpp"
+//#include "game/player.hpp"
 
 #include "platform/glut_window.hpp"

@@ -24,6 +24,20 @@ namespace cyx {
 				numbers[index++] = val;
 			}
 		}
+        
+        vec(T *vals) {
+           for(int i = 0; i < DIM; i++){
+                numbers[i] = vals[i];
+           } 
+        }
+
+
+        vec(const T *vals) {
+           for(int i = 0; i < DIM; i++){
+                numbers[i] = vals[i];
+           } 
+        }
+
 
         template <typename... Args>
         vec(Args... args) : numbers{{args...}} {
@@ -279,6 +293,7 @@ namespace cyx {
             return (*this);
         }
 
+		vec3(Type * v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
 		vec3(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
 		vec3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
 		vec3(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
