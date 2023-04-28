@@ -508,6 +508,17 @@ namespace cyx {
             );
         }
 
+        void TripleBufferMesh::enemy(TripleBufferMesh * self) {
+            from(
+                self,
+                enemy_objVerts,
+                enemy_objNormals,
+                enemy_objTexCoords, 
+                enemy_objIndexes,
+                enemy_objIndexesCount
+            );
+        }
+
         void TripleBufferMesh::init_gl() {
             glGenVertexArrays(1, &vao);
             glBindVertexArray(vao);

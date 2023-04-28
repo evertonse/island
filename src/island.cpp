@@ -55,7 +55,7 @@ SimpleTexture tex_tiger;
 
 TripleBufferMesh tiger;
 TripleBufferMesh cube;
-
+Skybox skybox;
 Model goblin;
 //TriangularMesh tri_mesh;
 
@@ -155,6 +155,8 @@ auto on_create(Window& win) {
     TripleBufferMesh::tiger(&tiger);
     TripleBufferMesh::cube(&cube);
     entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
+    entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
+    entities.push_back(Entity::make(EntityType::TERRAIN_BLOCK));
     entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
     entities.push_back(Entity::make(EntityType::PLANT1));
     entities.push_back(Entity::make(EntityType::PLANT2));
@@ -168,7 +170,7 @@ auto on_create(Window& win) {
     shader.compile();
     light.bind();
     light.compile();
-
+    skybox.init();
 }
 
 void on_destroy(Window& win) {
@@ -177,35 +179,6 @@ void on_destroy(Window& win) {
     //glDeleteBuffers(1, &VBO); // Opcional
 }
     // Loop de renderização principal
-void on_event(Window& win, Event e){
-
-    if (e.type == EventType::KEYDOWN){
-        key_is_down[e.key] = true;
-        if(e.key == Key::ESCAPE) {
-           flag.mouse_lock = false; 
-        }
-    }
-    if (e.type == EventType::KEYUP) {
-        key_is_down[e.key] = false;
-    }
-    if (e.type == EventType::MOUSEDOWN) {
-        flag.mouse_lock = true;
-        flag.mouse_is_down = true;
-    }    
-    else if (e.type == EventType::MOUSEUP) {
-        flag.mouse_is_down = false;
-    }   
-    if (e.type == EventType::MOUSEMOVE) {
-
-        on_mouse(win,(f32)e.mouse.x, f32(e.mouse.y));
-    }
-    if (e.type == EventType::RESHAPE) {
-        glViewport(0, 0 ,win.width(), win.height());
-    }
-    if (e.type == EventType::MOUSEWHEEL) {
-        on_scroll(e.mouse.wheel.dir);
-    }
-}
 
 void on_update(Window& win, f64 dt) {
 
@@ -324,9 +297,39 @@ void on_update(Window& win, f64 dt) {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         //glDrawElements(GL_TRIANGLES, vi.count(), GL_UNSIGNED_INT, NULL);
     }
+    skybox.draw(view,projection);
     win.swap_buffer();
 }
     
+void on_event(Window& win, Event e){
+
+    if (e.type == EventType::KEYDOWN){
+        key_is_down[e.key] = true;
+        if(e.key == Key::ESCAPE) {
+           flag.mouse_lock = false; 
+        }
+    }
+    if (e.type == EventType::KEYUP) {
+        key_is_down[e.key] = false;
+    }
+    if (e.type == EventType::MOUSEDOWN) {
+        flag.mouse_lock = true;
+        flag.mouse_is_down = true;
+    }    
+    else if (e.type == EventType::MOUSEUP) {
+        flag.mouse_is_down = false;
+    }   
+    if (e.type == EventType::MOUSEMOVE) {
+
+        on_mouse(win,(f32)e.mouse.x, f32(e.mouse.y));
+    }
+    if (e.type == EventType::RESHAPE) {
+        glViewport(0, 0 ,win.width(), win.height());
+    }
+    if (e.type == EventType::MOUSEWHEEL) {
+        on_scroll(e.mouse.wheel.dir);
+    }
+}
 
 void on_mouse(Window& win, f32 xposIn, f32 yposIn) {
     persistent_data f32 lastX = 0.0f;

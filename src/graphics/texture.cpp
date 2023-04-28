@@ -132,6 +132,7 @@ namespace cyx {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, id);
     }
+  
 
     void SimpleTexture::load(const char* filepath){
         glGenTextures(1, &id);
@@ -145,7 +146,6 @@ namespace cyx {
         // load image, create texture and generate mipmaps
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-        // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
         unsigned char *data = stbi_load(filepath, &width, &height, &channels, 0);
 
         if (data == nullptr) {

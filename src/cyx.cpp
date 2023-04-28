@@ -9,6 +9,7 @@
 #include "graphics/mesh.cpp"
 #include "graphics/model.cpp"
 #include "graphics/application.cpp"
+#include "graphics/skybox.cpp"
 
 #include "platform/glut_window.cpp"
 

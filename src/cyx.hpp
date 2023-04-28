@@ -20,6 +20,8 @@
 #include "graphics/event.hpp"
 #include "graphics/application.hpp"
 #include "graphics/window.hpp"
+#include "graphics/skybox.hpp"
+
 
 #include "game/world.hpp"
 //#include "game/player.hpp"

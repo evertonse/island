@@ -10,6 +10,7 @@ objs = [Path(f) for f in [
     'assets/models/goblin/goblin.obj',
     'assets/models/cube/cube.obj',
     'assets/models/plants/decorative/vase_plant.obj',
+    'assets/models/enemy/enemy.obj',
 ]]
 
 mapped_objs = poly2tri(objs)
@@ -33,7 +34,8 @@ for input_file,output_file in mapped_objs:
     output_file = Path(output_file)
     print(f"[obj2c]: compiling {input_file}")
 
-    if str(input_file).count("goblin") > 0 :
+    if any({str(input_file).count(n) > 0 for n in {'goblin', 'enemy'}}) :
+        print(f"[obj2c]: opting for no smooth_normals\n")
         options = [
             "--write_counts", 
             "--vb_friendly",

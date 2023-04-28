@@ -32,17 +32,18 @@ namespace island {
 
     Entity Entity:: make(EntityType type) {
         persistent_data int id_count = 0;
-
         persistent_data Model* terrain_block = new Model;
         persistent_data Model* terrestrial1  = new Model;
         persistent_data Model* terrestrial2  = new Model;
         persistent_data Model* terrestrial3  = new Model;
+        persistent_data Model* terrestrial4  = new Model;
         persistent_data Model* plant1 = new Model;
         persistent_data Model* plant2 = new Model;
         persistent_data bool terrain_block_loaded = false;
         persistent_data bool terrestrial1_loaded  = false;
         persistent_data bool terrestrial2_loaded  = false;
         persistent_data bool terrestrial3_loaded  = false;
+        persistent_data bool terrestrial4_loaded  = false;
         persistent_data bool plant1_loaded  = false;
         persistent_data bool plant2_loaded  = false;
 
@@ -78,12 +79,21 @@ namespace island {
                 break;
             }
             case EntityType::TERRESTRIAL1: {
-                if (terrestrial1_loaded == false){
-                    TripleBufferMesh::goblin(&terrestrial1->mesh);
-                    terrestrial1->texture.load("assets/textures/tex_goblin.png");
-                    terrestrial1_loaded = true; 
+                if (e.id  % 2 == 0) {
+                    if (terrestrial4_loaded == false){
+                        TripleBufferMesh::goblin(&terrestrial4->mesh);
+                        terrestrial4->texture.load("assets/textures/tex_goblin.png");
+                        terrestrial4_loaded = true;
+                    }
+                    e.model = terrestrial4;
+                } else {
+                    if (terrestrial1_loaded == false){
+                        TripleBufferMesh::enemy(&terrestrial1->mesh);
+                        terrestrial1->texture.load("assets/textures/enemy.png");
+                        terrestrial1_loaded = true;
+                    }
+                    e.model = terrestrial1;
                 }
-                e.model = terrestrial1; 
                 break;
             }
             case EntityType::TERRESTRIAL2: {

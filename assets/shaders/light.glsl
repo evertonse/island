@@ -47,7 +47,7 @@ in vec3 normal;
 in vec3 curr_pos;
 
 const vec4 DEUBG_COLOR = vec4(0.1, 1.0, 0.2 , 1.0);
-const vec3 light_position = vec3(10.0, 1000.0,10.0);
+const vec3 light_position = vec3(100.0, 1000.0,10.0);
 const vec4 light_color = vec4(1.0, 0.9, 0.9, 1.0);
 
 // Gets the position of the camera from the main function
@@ -68,7 +68,7 @@ void debug() {
 void main() {
 
 	// ambient lighting
-	float ambient = 0.37;
+	float ambient = 0.28;
 
 	// diffuse lighting
 	vec3  normal = normalize(normal);
@@ -85,7 +85,7 @@ void main() {
 	float specular_light = 0.15;
 	vec3  view_direction = normalize(cam_position - curr_pos);
 	vec3  reflection_direction = reflect(-light_direction, normal);
-	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.), 7);
+	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.0), 7);
 	float specular = spec_amount * specular_light;
 
 	// outputs final color
