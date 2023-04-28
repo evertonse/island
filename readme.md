@@ -17,3 +17,4 @@
 - ``click`` and ``drag`` to control the view direction
 - ``space,q`` to go up 
 -  ``e`` to go down (couldn't resolve the crlt glut problem, so cant use crtl to go down) 
+- ``wheel`` to change fov
