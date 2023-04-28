@@ -12,9 +12,11 @@ namespace cyx {
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
         glGenBuffers(1, &ib);
+
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+        
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
@@ -78,20 +80,20 @@ namespace cyx {
                 default:
                     (assert(0 && "idk about this format"));
             }
-
-                stbi_set_flip_vertically_on_load(false); // Because opengl lmao
-                glTexImage2D (
-                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // little hack with the + i, just look at the definition you'll see
-                    0,
-                    format,
-                    width,
-                    height,
-                    0,
-                    format,
-                    GL_UNSIGNED_BYTE,
-                    data
-                );
-                stbi_image_free(data);
+    
+            stbi_set_flip_vertically_on_load(false);// Because opengl lmao
+            glTexImage2D (
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // little hack with the + i, just look at the definition you'll see
+                0,
+                format,
+                width,
+                height,
+                0,
+                format,
+                GL_UNSIGNED_BYTE,
+                data
+            );
+            stbi_image_free(data);
         }
 	}
 

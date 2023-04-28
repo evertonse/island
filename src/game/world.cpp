@@ -11,16 +11,16 @@ namespace island {
         volume.xdim = xdim;
         volume.ydim = ydim;
         volume.zdim = zdim;
-        volume.data = new bool[xdim * ydim * zdim];
+        volume.data = new EntityType[xdim * ydim * zdim];
         return volume;
     }
 
-    const bool& Volume::operator()(u32 x, u32 y, u32 z) const {
+    const EntityType& Volume::operator()(u32 x, u32 y, u32 z) const {
         assert(x < xdim && y < ydim && z < zdim);
         return data[x + y*xdim + z*xdim*ydim];
     }
 
-    bool& Volume::operator()(u32 x, u32 y, u32 z) {
+    EntityType& Volume::operator()(u32 x, u32 y, u32 z) {
         assert(x < xdim && y < ydim && z < zdim);
         return data[x + y*xdim + z*xdim*ydim];
     }
@@ -33,6 +33,7 @@ namespace island {
     Entity Entity:: make(EntityType type) {
         persistent_data int id_count = 0;
         persistent_data Model* terrain_block = new Model;
+        persistent_data Model* sand_block = new Model;
         persistent_data Model* terrestrial1  = new Model;
         persistent_data Model* terrestrial2  = new Model;
         persistent_data Model* terrestrial3  = new Model;
@@ -40,6 +41,7 @@ namespace island {
         persistent_data Model* plant1 = new Model;
         persistent_data Model* plant2 = new Model;
         persistent_data bool terrain_block_loaded = false;
+        persistent_data bool sand_block_loaded = false;
         persistent_data bool terrestrial1_loaded  = false;
         persistent_data bool terrestrial2_loaded  = false;
         persistent_data bool terrestrial3_loaded  = false;
@@ -76,6 +78,15 @@ namespace island {
                     terrain_block_loaded = true; 
                 }
                 e.model = terrain_block; 
+                break;
+            } 
+            case EntityType::SAND_BLOCK: {
+                if (sand_block_loaded == false){
+                    TripleBufferMesh::cube(&sand_block->mesh);
+                    sand_block->texture.load("assets/textures/sand.jpg");
+                    sand_block_loaded = true; 
+                }
+                e.model = sand_block; 
                 break;
             }
             case EntityType::TERRESTRIAL1: {
@@ -123,5 +134,27 @@ namespace island {
 
     void Entity::destroy(Entity *self) {
         delete self->model;
+    }
+
+
+
+
+    World& World::generate_volume() {
+        this->volume = Volume::make(dimensions.x, dimensions.y, dimensions.z);
+        for (int x = 0; x < volume.xdim; x++) {
+            for (int y = 0; y < volume.ydim; y++){
+                for (int z = 0; z < volume.zdim; z++) {
+
+                    EntityType type = EntityType::SAND_BLOCK; 
+                    volume(x,y,z)   = type;
+                    Entity e = Entity::make(type);
+                    e.world_position = veci3(x,y,z);
+                    e.transform.position = vec3(f32(x),f32(y),f32(z));
+                    entities.push_back(e);
+                }
+            }
+        }
+
+        return *this;
     }
 } // namespace cyx::island

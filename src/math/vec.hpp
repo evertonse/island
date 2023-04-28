@@ -336,18 +336,24 @@ namespace cyx {
 	};	
 
     struct veci3 : public vec<i32,3> {
-		using MyBase   = vec<i32,3>;
+
+        using Type   = i32;
+		using MyBase = vec<i32,3>;
 		
 		union {
 			struct {	i32 &x,&y,&z;};
 			struct {	i32 &r,&g,&b;};
 		};
 		
+        veci3& operator=(const veci3& other) { {x = other.x; y = other.y;z = other.z; } return *this; }
 		veci3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
 		veci3(std::initializer_list<i32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
+		veci3(Type x, Type y, Type z) :MyBase(std::initializer_list<Type>({x,y,z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
 	};
 
     struct veci2 : public vec<i32,3> {
+
+        using Type = i32;
         using MyBase   = vec<i32,3>;
         
         union {

@@ -28,11 +28,8 @@ void on_scroll(f32 dir);
 const unsigned int WIDTH = 800; 
 const unsigned int HEIGHT = 600;
 
-vec3 cameraPosition = vec3(0.0f, 0.0f, 3.0f);
-vec3 cameraFront = vec3(0.0f, 0.0f, -1.0f);
-vec3 cameraUp = vec3(0.0f, 1.0f, 0.0f);
+AccelCamera cam = AccelCamera(vec3(0.0f, 10.0f, 3.0f));
 
-AccelCamera cam = AccelCamera(vec3(0.0f, 0.0f, 3.0f));
 f64 delta_time = 0.0f;
 VertexBuffer* VBO;
 VertexArray* VAO;
@@ -57,6 +54,7 @@ TripleBufferMesh tiger;
 TripleBufferMesh cube;
 Skybox skybox;
 Model goblin;
+World world;
 //TriangularMesh tri_mesh;
 
 // Vertices dos triângulos
@@ -157,6 +155,7 @@ auto on_create(Window& win) {
     entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
     entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
     entities.push_back(Entity::make(EntityType::TERRAIN_BLOCK));
+    entities.push_back(Entity::make(EntityType::TERRAIN_BLOCK));
     entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
     entities.push_back(Entity::make(EntityType::PLANT1));
     entities.push_back(Entity::make(EntityType::PLANT2));
@@ -170,6 +169,7 @@ auto on_create(Window& win) {
     shader.compile();
     light.bind();
     light.compile();
+    world.generate_volume();
     skybox.init();
 }
 
@@ -232,6 +232,12 @@ void on_update(Window& win, f64 dt) {
     //tex_goblin.bind();
     //goblin.draw();
 
+    for(auto& e : world.entities) {
+        mat4 model = mat4::identity();
+        model = mat4::translate(model, e.transform.position*10);
+        light.uniform_mat4("model", model.data(),true);
+        e.model->draw();
+    }
     int i = 0;
     for (auto& e : entities) {
         mat4 model = mat4::identity();
@@ -242,6 +248,7 @@ void on_update(Window& win, f64 dt) {
         e.model->draw();
         i++;
     }
+
 
     //tri_mesh.draw();
 
@@ -268,9 +275,6 @@ void on_update(Window& win, f64 dt) {
         //glDrawElements(GL_TRIANGLES, vi.count(), GL_UNSIGNED_INT, NULL);
     }
 
-
-    std::cout << "horse : " << tex_horse.id << "\n";
-    std::cout << "wall : " << tex_wall.id << "\n";
     
 
     VAO->bind();
@@ -278,7 +282,6 @@ void on_update(Window& win, f64 dt) {
     for(unsigned int i = 0; i < 10; i++) {
         // Model Matrix
         if (i  == 2 || i == 3){
-            //std::cout << "le fuck  i = " << i << '\n'; std::cin.get();
             tex_goblin.bind();
         }else {
             tex_horse.bind();
@@ -297,6 +300,7 @@ void on_update(Window& win, f64 dt) {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         //glDrawElements(GL_TRIANGLES, vi.count(), GL_UNSIGNED_INT, NULL);
     }
+
     skybox.draw(view,projection);
     win.swap_buffer();
 }

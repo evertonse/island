@@ -6,8 +6,7 @@ void cyx::Model::load(const char *mesh_path, const char *texture_path)
     texture.load(texture_path);
 }
 
-void cyx::Model::draw()
-{
+void cyx::Model::draw() {
     assert(this != nullptr);
     texture.bind();
     mesh.draw();

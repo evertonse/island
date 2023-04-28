@@ -5,19 +5,29 @@
 #include "math/vec.hpp"
 #include "utils/common.h"
 
+#define ISLAND_CUBE_VOLUME 1.0
+
 using namespace cyx;
 
 namespace island {
 
+    enum class EntityType {
+        TERRAIN_BLOCK,
+        SAND_BLOCK,
+        WATER_BLOCK,
+        PLANT1, PLANT2,
+        TERRESTRIAL1, TERRESTRIAL2
+    };
+
     struct Volume{
-        bool* data;
+        EntityType* data;
         u32 xdim, ydim, zdim;
 
         static Volume make(u32 xdim, u32 ydim, u32 zdim);
 
-        const bool& operator()(u32 x, u32 y, u32 z) const;
+        const EntityType& operator()(u32 x, u32 y, u32 z) const;
 
-        bool& operator()(u32 x, u32 y, u32 z) ;
+        EntityType& operator()(u32 x, u32 y, u32 z) ;
 
         static void destroy(Volume* self );
     };
@@ -31,16 +41,11 @@ namespace island {
         vec3 last_rotation{0.0f};
 
         vec3 velocity{0.0};
+        vec3 acceleration{0.0};
 
         bool active = false;
     };
 
-    enum class EntityType {
-        TERRAIN_BLOCK,
-        WATER_BLOCK,
-        PLANT1, PLANT2,
-        TERRESTRIAL1, TERRESTRIAL2
-    };
 
     struct Entity {
         Transform  transform;
@@ -48,13 +53,15 @@ namespace island {
         u32 id;
         Model* model;
         EntityType type;
+        
 
         static Entity make(EntityType type);
         static void destroy(Entity *self);
     };
 
     struct World {
-        veci3 dimensions{40,40,10};
+        veci3 dimensions{10,10,10};
+
         u32 island_percent{80}; 
         u32 lake_percent{20}; 
         
@@ -63,8 +70,13 @@ namespace island {
 
         u32 plant1_count;
         u32 plant2_count;
-        Volume vol;
+
+        u32 water_level = 2;
+
+        Volume volume;
         std::vector<Entity> entities;
+
+        World& generate_volume();
     };
 } // namespace cyx::island
 

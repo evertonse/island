@@ -7,6 +7,9 @@
 #include <string>
 #include <regex>
 
+//#define CYX_DEFAULT_SKYBOX "assets/textures/skybox/cloud/"
+#define CYX_DEFAULT_SKYBOX "assets/textures/skybox/sky/"
+
 namespace cyx {
     /*
     Resource : https://www.khronos.org/opengl/wiki/Cubemap_Texture
@@ -62,7 +65,8 @@ struct Skybox {
         3, 7, 6,
         6, 2, 3
     };
-    void init(const char* directory_path = "assets/textures/skybox/cloud/", const char* extension = ".png");
+    void init(
+        const char* directory_path = CYX_DEFAULT_SKYBOX , const char* extension = ".png");
     void draw(const mat4& view, mat4 projection);
 
 };
