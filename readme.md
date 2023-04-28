@@ -1,5 +1,7 @@
 # Compile
-- ``g++ src/main.cpp  -o bin/app -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/``
+- ``mkdir bin && g++ src/main.cpp  -o bin/app -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/``
+- try ``-lglut`` instead of ``-lfreeglut`` if prefer/problems
+
 # Run
 - ``bin/app``
 - Windows ``bin\app.exe``
