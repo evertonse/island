@@ -22,6 +22,6 @@ fi
 //#include "simple.cpp"
 //#include "fixed_pipeline.cpp"
 //#include "learn-opengl.cpp"
-#include "old_island.cpp"
+#include "island.cpp"
 
 // Compile: bash src/main.cpp 

@@ -9,6 +9,7 @@ objs = [Path(f) for f in [
     'assets/models/tiger/tiger.obj',
     'assets/models/goblin/goblin.obj',
     'assets/models/cube/cube.obj',
+    'assets/models/plants/decorative/vase_plant.obj',
 ]]
 
 mapped_objs = poly2tri(objs)
@@ -32,12 +33,17 @@ for input_file,output_file in mapped_objs:
     output_file = Path(output_file)
     print(f"[obj2c]: compiling {input_file}")
 
-    options = [
-        "--write_counts", 
-        "--vb_friendly",
-        "--smooth_normals", # << requires --vb_friendly
-        
-    ]
+    if str(input_file).count("goblin") > 0 :
+        options = [
+            "--write_counts", 
+            "--vb_friendly",
+        ]
+    else:
+        options = [
+            "--write_counts", 
+            "--vb_friendly",
+            "--smooth_normals", # << requires --vb_friendly
+        ]
 
     code = os.system(f"{exe} {input_file} {output_file} {' '.join(options)}")
     if code == 0:

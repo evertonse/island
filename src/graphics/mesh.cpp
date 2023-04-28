@@ -497,6 +497,17 @@ namespace cyx {
             );
         }
 
+        void TripleBufferMesh::plant1(TripleBufferMesh * self) {
+            from(
+                self,
+                vase_plant_objVerts,
+                vase_plant_objNormals,
+                vase_plant_objTexCoords, 
+                vase_plant_objIndexes,
+                vase_plant_objIndexesCount
+            );
+        }
+
         void TripleBufferMesh::init_gl() {
             glGenVertexArrays(1, &vao);
             glBindVertexArray(vao);

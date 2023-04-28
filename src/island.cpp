@@ -47,7 +47,7 @@ Shader light(
     "assets/shaders/light.glsl"
 );
 
-
+std::vector<Entity> entities;
 SimpleTexture tex_wall;
 SimpleTexture tex_horse;
 SimpleTexture tex_goblin;
@@ -154,7 +154,11 @@ auto on_create(Window& win) {
     TripleBufferMesh::goblin(&goblin.mesh);
     TripleBufferMesh::tiger(&tiger);
     TripleBufferMesh::cube(&cube);
-
+    entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
+    entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
+    entities.push_back(Entity::make(EntityType::PLANT1));
+    entities.push_back(Entity::make(EntityType::PLANT2));
+    entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
     // Desvincular VBO e VAO para não modificar acidentalmente
     VAO->unbind();
     VBO->unbind();
@@ -233,11 +237,11 @@ void on_update(Window& win, f64 dt) {
     shader.uniform_mat4("view", view.data(), true);
 
     light.bind();
-
-    light.uniform_mat4("projection", projection.data(),true);
-    light.uniform_mat4("view", view.data(), true);
-    
+    light.uniform_mat4("projection",  projection.data(),true);
+    light.uniform_mat4("view",        view.data(), true);
     //std::cout << " Fragment: " << light.src(ShaderType::FRAGMENT) << "Vertex : " << light.src(ShaderType::VERTEX); std::cin.get();
+    light.uniform_vec3("cam_position",         cam.position.data());
+    
 
 
     // Trazer os "back buffers" para frente
@@ -252,8 +256,19 @@ void on_update(Window& win, f64 dt) {
     shader.uniform_mat4("model", model.data(),true);
     light.bind();
 
-    tex_goblin.bind();
-    goblin.draw();
+    //tex_goblin.bind();
+    //goblin.draw();
+
+    int i = 0;
+    for (auto& e : entities) {
+        mat4 model = mat4::identity();
+        model = mat4::translate(model, vec3(-2.8f + i, -2.0f, -2.3f));
+        float angle = -15.0f + i;
+        model = mat4::rotate(model, radians(angle), vec3(5.0f, 0.3f, 0.5f));
+        light.uniform_mat4("model", model.data(),true);
+        e.model->draw();
+        i++;
+    }
 
     //tri_mesh.draw();
 

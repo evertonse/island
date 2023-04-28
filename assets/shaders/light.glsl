@@ -12,7 +12,6 @@ const vec4 aColor = vec4(230, 198, 199, 255)/255.0;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
 // Outputs the color for the Fragment Shader
 out vec4 color;
 // Outputs the texture coordinates to the Fragment Shader
@@ -48,17 +47,19 @@ in vec3 normal;
 in vec3 curr_pos;
 
 const vec4 DEUBG_COLOR = vec4(0.1, 1.0, 0.2 , 1.0);
-// Gets the position of the light from the main function
-const vec3 light_position = vec3(10.0, 10.0,10.0);
-// Gets the color of the light from the main function
-const vec4 light_color = vec4(1.0, 1.0, 1.0, 0.7);
-const vec3 cam_position = vec3(1.0, 1.0, 1.0);
+const vec3 light_position = vec3(10.0, 1000.0,10.0);
+const vec4 light_color = vec4(1.0, 0.9, 0.9, 1.0);
 
 // Gets the position of the camera from the main function
 //uniform vec3 camera_position;
-out vec4 FragColor;
-
 uniform sampler2D tex0;
+
+
+//The compiler is allowed to optimize away any UNUSED uniforms, which is why you get this error.
+//You can safely ignore this. If the uniform isn't found, glGetUniformLocation returns -1. From the OpenGL 4.3 specs, section 7.6.1: 
+uniform vec3 cam_position;
+
+out vec4 FragColor;
 
 void debug() {
     FragColor = DEUBG_COLOR;
@@ -67,24 +68,28 @@ void debug() {
 void main() {
 
 	// ambient lighting
-	float ambient = 0.2;
+	float ambient = 0.37;
 
 	// diffuse lighting
 	vec3  normal = normalize(normal);
 	vec3  light_direction = normalize(light_position - curr_pos);
-	float diffuse = max(dot(normal, light_direction), 0.0);
+	float diffuse = max(dot(normal, light_direction), 0.0); // max method
+	//float diffuse = abs(dot(normal, light_direction)); // abs method
 
-    FragColor = texture(tex0, tex_coord) * diffuse;
-    FragColor.w = 1.0;
-    return;
+    //FragColor = texture(tex0, tex_coord) * diffuse; // uncomment this for only diffuse
+    //FragColor = texture(tex0, tex_coord) * (diffuse + ambient); // uncomment this for only diffuse + ambient
+    //FragColor.w = 1.0;
+    //return;
 
 	// specular lighting
-	float specular_light = 0.5;
+	float specular_light = 0.15;
 	vec3  view_direction = normalize(cam_position - curr_pos);
 	vec3  reflection_direction = reflect(-light_direction, normal);
-	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.), 8);
+	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.), 7);
 	float specular = spec_amount * specular_light;
 
 	// outputs final color
 	FragColor = texture(tex0, tex_coord) * light_color * (diffuse + ambient + specular);
+
+    FragColor.w = 1.0;
 }

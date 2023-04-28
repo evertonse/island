@@ -82,6 +82,7 @@ namespace cyx {
 
         static void cube(TripleBufferMesh *self);
         static void bamboo(TripleBufferMesh *self);
+        static void plant1(TripleBufferMesh *self);
 
     private:
 

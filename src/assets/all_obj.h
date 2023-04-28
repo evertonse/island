@@ -5,3 +5,4 @@
 #include "assets/tiger_obj.h"
 #include "assets/goblin_obj.h"
 #include "assets/cube_obj.h"
+#include "assets/vase_plant_obj.h"

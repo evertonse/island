@@ -4,7 +4,9 @@
 namespace cyx {
     static void SHADER_ASSERT_LOCATION(int location,const char* filepath,const char* var) {
         if (location == -1) {
-			std::cout << "[Shader]:" << filepath <<" BAD uniform Location for uniform: " << var  << "\n";
+			std::cout << "[Shader]:" 
+                << filepath <<" BAD uniform location: " << location 
+                << " for uniform: " << var  << "\n";
             exit(1);
 		}
     }
@@ -269,6 +271,7 @@ namespace cyx {
 	}
 
 	auto Shader::uniform_vec3(const char* var, f32* values) -> void {
+        bind();
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniform3f(location, values[0], values[1], values[2]);
         SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);

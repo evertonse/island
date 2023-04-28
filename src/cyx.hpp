@@ -16,14 +16,12 @@
 #include "graphics/vertex.hpp"
 #include "graphics/shader.hpp"
 #include "graphics/model.hpp"
-
 #include "graphics/mesh.hpp"
-#include "graphics/texture.hpp"
 #include "graphics/event.hpp"
 #include "graphics/application.hpp"
 #include "graphics/window.hpp"
 
-#include "game/entity.hpp"
+#include "game/world.hpp"
 //#include "game/player.hpp"
 
 #include "platform/glut_window.hpp"

@@ -4,7 +4,6 @@
 #include "math/useful.hpp"
 #include "graphics/event.hpp"
 #include "graphics/window.hpp"
-#include "game/world/entity.hpp"
 
 using namespace cyx;
 namespace island {
