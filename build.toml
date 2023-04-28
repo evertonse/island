@@ -27,6 +27,7 @@ includedirs = [
   "vendor/", 
   "vendor/glad/include", 
   "vendor/stb/include", 
+  "vendor/noise/", 
 ]
 
 # -L

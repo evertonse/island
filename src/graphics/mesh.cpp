@@ -419,7 +419,8 @@ namespace cyx {
             const f32 normals[][3],
             const f32 uvs[][2],
             const u32* indexes,
-            const u32 indexes_count
+            const u32 indexes_count,
+            const f32 scale
         ){
 
             self->verts   = std::vector<f32>();
@@ -429,7 +430,7 @@ namespace cyx {
             for (size_t it = 0; it < indexes_count; it++) {
                 u32 i = indexes[it];
                 for (size_t j = 0; j < 3; j++) {
-                    self->verts.push_back(vertices[i][j]);
+                    self->verts.push_back(vertices[i][j]*scale);
                     self->normals.push_back(normals[i][j]);
                     if (j < 2) {
                         self->uvs.push_back(uvs[i][j]);
@@ -449,7 +450,8 @@ namespace cyx {
             goblin_objNormals,
             goblin_objTexCoords, 
             goblin_objIndexes,
-            goblin_objIndexesCount
+            goblin_objIndexesCount,
+            0.82f
             );
         }
 

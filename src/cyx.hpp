@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "glad/glad.h"
 #include "stb_image.h"
+#include "noise.h"
 
 #include "utils/common.h"
 

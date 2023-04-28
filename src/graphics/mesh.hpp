@@ -73,7 +73,8 @@ namespace cyx {
             const f32 normals  [][3],
             const f32 uvs      [][2],
             const u32* indexes,
-            const u32 indexes_count
+            const u32 indexes_count,
+            const f32 scale = 1.0f
         );
 
         static void goblin(TripleBufferMesh*self);

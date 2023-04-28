@@ -2,6 +2,7 @@
 
 #include "glad/src/glad.c"
 #include "stb/src/stb_image.c"
+#include "noise.c"
 
 #include "graphics/vertex.cpp"
 #include "graphics/shader.cpp"

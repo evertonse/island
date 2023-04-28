@@ -323,6 +323,24 @@ namespace cyx {
             });
         }
 
+
+
+
+        static mat4 scaling(f32 scaling_factor) {
+            mat4 m = mat::identity();
+            for (size_t i = 0; i < 3; i++) {
+                m(i,i) = scaling_factor;
+            }
+            m(3,3) = 1.0f;
+            return m;
+        }
+        static mat4 scale(const mat4& m, f32 scaling_factor) {
+            mat4 id = mat::identity();
+            id(3,3) = 1/scaling_factor;
+
+            return scaling(scaling_factor) % m;
+        }
+         
         static mat4 rotate(const mat& m, f32 angle, const vec3 & axis) {
             mat4 rotate = mat::rotation(angle,axis);
             mat4 result = rotate % m; 

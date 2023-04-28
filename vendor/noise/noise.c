@@ -28,10 +28,10 @@ SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
-#define F2 0.3660254037844386f
-#define G2 0.21132486540518713f
-#define F3 (1.0f / 3.0f)
-#define G3 (1.0f / 6.0f)
+#define NOISE_F2 0.3660254037844386f
+#define NOISE_G2 0.21132486540518713f
+#define NOISE_F3 (1.0f / 3.0f)
+#define NOISE_G3 (1.0f / 6.0f)
 #define ASSIGN(a, v0, v1, v2) (a)[0] = v0; (a)[1] = v1; (a)[2] = v2;
 #define DOT3(v1, v2) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[1] + (v1)[2] * (v2)[2])
 
@@ -128,10 +128,10 @@ void seed(unsigned int x) {
 
 float noise2(float x, float y) {
     int i1, j1, I, J, c;
-    float s = (x + y) * F2;
+    float s = (x + y) * NOISE_F2;
     float i = floorf(x + s);
     float j = floorf(y + s);
-    float t = (i + j) * G2;
+    float t = (i + j) * NOISE_G2;
 
     float xx[3], yy[3], f[3];
     float noise[3] = {0.0f, 0.0f, 0.0f};
@@ -143,10 +143,10 @@ float noise2(float x, float y) {
     i1 = xx[0] > yy[0];
     j1 = xx[0] <= yy[0];
 
-    xx[2] = xx[0] + G2 * 2.0f - 1.0f;
-    yy[2] = yy[0] + G2 * 2.0f - 1.0f;
-    xx[1] = xx[0] - i1 + G2;
-    yy[1] = yy[0] - j1 + G2;
+    xx[2] = xx[0] + NOISE_G2 * 2.0f - 1.0f;
+    yy[2] = yy[0] + NOISE_G2 * 2.0f - 1.0f;
+    xx[1] = xx[0] - i1 + NOISE_G2;
+    yy[1] = yy[0] - j1 + NOISE_G2;
 
     I = (int) i & 255;
     J = (int) j & 255;
@@ -171,11 +171,11 @@ float noise2(float x, float y) {
 float noise3(float x, float y, float z) {
     int c, o1[3], o2[3], g[4], I, J, K;
     float f[4], noise[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    float s = (x + y + z) * F3;
+    float s = (x + y + z) * NOISE_F3;
     float i = floorf(x + s);
     float j = floorf(y + s);
     float k = floorf(z + s);
-    float t = (i + j + k) * G3;
+    float t = (i + j + k) * NOISE_G3;
 
     float pos[4][3];
 
@@ -208,9 +208,9 @@ float noise3(float x, float y, float z) {
     }
     
     for (c = 0; c <= 2; c++) {
-        pos[3][c] = pos[0][c] - 1.0f + 3.0f * G3;
-        pos[2][c] = pos[0][c] - o2[c] + 2.0f * G3;
-        pos[1][c] = pos[0][c] - o1[c] + G3;
+        pos[3][c] = pos[0][c] - 1.0f + 3.0f * NOISE_G3;
+        pos[2][c] = pos[0][c] - o2[c] + 2.0f * NOISE_G3;
+        pos[1][c] = pos[0][c] - o1[c] + NOISE_G3;
     }
 
     I = (int) i & 255; 

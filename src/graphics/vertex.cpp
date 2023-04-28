@@ -186,7 +186,6 @@ namespace cyx {
 		glLogCall(
 			glBindBuffer(GL_ARRAY_BUFFER, _vertex_bufferID);
 		);
-		std::cout << "[VertexBuffer]" << "bound\n";
 		_is_bound = true;
 	}
 
@@ -196,7 +195,6 @@ namespace cyx {
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		);
 		_is_bound = false;
-		std::cout << "[VertexBuffer]" << "unbound\n";
 	}
 
 	// Only float for now
@@ -256,7 +254,6 @@ namespace cyx {
 
 	auto VertexIndex::bind() const -> void {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->_vertex_indexID);
-		std::cout << "[VertexIndex]" << "bound\n";
 		_is_bound = true;
 	
 	}
@@ -272,6 +269,5 @@ namespace cyx {
 	auto VertexIndex::unbind() const -> void {
 		_is_bound = false;
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		std::cout << "[VertexIndex]" << "unbound\n";
 	}
 }

@@ -68,43 +68,39 @@ struct AccelCamera {
         velocity += acceleration;
         acceleration = {0, 0, 0};
 
-        position.x += velocity.x * dt;
+        position += velocity * dt;
 
-        position.y += velocity.y * dt;
-
-        position.z += velocity.z * dt;
-
-        velocity.x *= 0.90f;
-        velocity.z *= 0.90f;
-        velocity.y *= 0.90f;
+        velocity *= 0.956f;
     }
 
     void on_key(Key key, f32 dt) {
-        float PLAYER_SPEED = 5.4f * speed * dt;
+        float SPEED = 7.45f * speed * dt;
+
+        persistent_data Key key_before = key;
         if (key == Key::SHIFT) {
-            PLAYER_SPEED *= 15.0f * speed * dt;
+            SPEED *= 15.0f * speed * dt;
         }
         if (key == Key::A) {
-            acceleration.x += -std::cos(radians(yaw + 90)) * PLAYER_SPEED;
-            acceleration.z += -std::sin(radians(yaw + 90)) * PLAYER_SPEED;
+            acceleration.x += -std::cos(radians(yaw + 90)) * SPEED;
+            acceleration.z += -std::sin(radians(yaw + 90)) * SPEED;
         }
         else if (key == Key::D) {
-            acceleration.x += std::cos(radians(yaw + 90)) * PLAYER_SPEED;
-            acceleration.z += std::sin(radians(yaw + 90)) * PLAYER_SPEED;
+            acceleration.x += std::cos(radians(yaw + 90)) * SPEED;
+            acceleration.z += std::sin(radians(yaw + 90)) * SPEED;
         }
         else if (key == Key::S) {
-            acceleration += vec3::left(vec3(pitch,yaw,0.0)) * PLAYER_SPEED;
+            acceleration += vec3::left(vec3(pitch,yaw,0.0)) * SPEED;
         }
         else if (key == Key::W) {
-            acceleration += vec3::right(vec3(pitch,yaw,0.0)) * PLAYER_SPEED;
+            acceleration += vec3::right(vec3(pitch,yaw,0.0)) * SPEED;
         }
         else if ((key == Key::E) || (key == Key::CTRL)) {
-            acceleration.y -= PLAYER_SPEED * 2;
+            acceleration.y -= SPEED * 2;
         }
         else if (key == Key::Q || key == Key::SPACE){
-            acceleration.y += PLAYER_SPEED * 2.1;
+            acceleration.y += SPEED * 2.198;
         }    
-
+        key_before = key; 
         if (pitch < -80.0f) {
             pitch = -79.9f;
         }

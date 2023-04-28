@@ -1,11 +1,17 @@
 #pragma once
 #include <vector>
+#include <tuple>
+#include <map>
+
+#include "noise.h"
 
 #include "graphics/model.hpp"
 #include "math/vec.hpp"
 #include "utils/common.h"
+#include "math/useful.hpp"
 
-#define ISLAND_CUBE_VOLUME 1.0
+#define ISLAND_CUBE_VOLUME 2.0
+
 
 using namespace cyx;
 
@@ -23,11 +29,11 @@ namespace island {
         EntityType* data;
         u32 xdim, ydim, zdim;
 
-        static Volume make(u32 xdim, u32 ydim, u32 zdim);
+        static Volume make(i32 xdim, i32 ydim, i32 zdim);
 
-        const EntityType& operator()(u32 x, u32 y, u32 z) const;
+        const EntityType& operator()(i32 x, i32 y, i32 z) const;
 
-        EntityType& operator()(u32 x, u32 y, u32 z) ;
+        EntityType& operator()(i32 x, i32 y, i32 z) ;
 
         static void destroy(Volume* self );
     };
@@ -40,6 +46,9 @@ namespace island {
         vec3 last_position{0.0f};
         vec3 last_rotation{0.0f};
 
+        vec3 new_position{0.0f};
+        vec3 new_rotation{0.0f};
+        f32 scale = 1.0f; 
         vec3 velocity{0.0};
         vec3 acceleration{0.0};
 
@@ -60,23 +69,30 @@ namespace island {
     };
 
     struct World {
-        veci3 dimensions{10,10,10};
+        World(){};
+        using Coord2D = std::tuple<int, int>;
+        using HeightMap = std::map<Coord2D, int>;
 
+        HeightMap height_map;
+        std::vector<veci3> free_list;        
+
+        veci3 dimensions{10,10,10};
         u32 island_percent{80}; 
         u32 lake_percent{20}; 
         
-        u32 terrestrial1_count;
-        u32 terrestrial2_count;
+        u32 terrestrial1_count = 20;
+        u32 terrestrial2_count = 20;
 
-        u32 plant1_count;
-        u32 plant2_count;
+        u32 plant1_count = 10;
+        u32 plant2_count = 10;
 
-        u32 water_level = 2;
+        u32 water_level = 1;
 
         Volume volume;
         std::vector<Entity> entities;
 
         World& generate_volume();
+        void update_positions();
     };
 } // namespace cyx::island
 

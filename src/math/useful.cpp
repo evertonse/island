@@ -1,3 +1,0 @@
-namespace cyx::math{
-
-}

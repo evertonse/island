@@ -1,10 +1,11 @@
+#include <string>
+#include <map>
+#include <iostream>
 
 #define CYX_POINTER_BASED_APPLICATION
 #include "cyx.hpp"
 #include "cyx.cpp"
 #include "utils/log.hpp"
-#include <string>
-#include <map>
 
 using namespace cyx;
 using namespace island;
@@ -15,7 +16,6 @@ struct Flags {
 } flag;
 
 
-#include <iostream>
 using std::cout;
 using std::endl;
 
@@ -28,7 +28,7 @@ void on_scroll(f32 dir);
 const unsigned int WIDTH = 800; 
 const unsigned int HEIGHT = 600;
 
-AccelCamera cam = AccelCamera(vec3(0.0f, 10.0f, 3.0f));
+AccelCamera cam = AccelCamera(vec3(20.0f, 10.0f, 3.0f));
 
 f64 delta_time = 0.0f;
 VertexBuffer* VBO;
@@ -54,7 +54,7 @@ TripleBufferMesh tiger;
 TripleBufferMesh cube;
 Skybox skybox;
 Model goblin;
-World world;
+World& world = *(new World());
 //TriangularMesh tri_mesh;
 
 // Vertices dos triângulos
@@ -234,7 +234,11 @@ void on_update(Window& win, f64 dt) {
 
     for(auto& e : world.entities) {
         mat4 model = mat4::identity();
-        model = mat4::translate(model, e.transform.position*10);
+        model = mat4::scale(model, e.transform.scale);
+        // The width of a block is 2 so we need to translate by 2
+        // but since it has some z-value fightin we spread them apart
+        // by a small factor of 000.1
+        model = mat4::translate(model, e.transform.position*2.001);
         light.uniform_mat4("model", model.data(),true);
         e.model->draw();
     }

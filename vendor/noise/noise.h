@@ -37,4 +37,6 @@ float simplex3(
     float x, float y, float z,
     int octaves, float persistence, float lacunarity);
 
+float noise2(float x, float y);
+
 #endif
