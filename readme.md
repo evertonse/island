@@ -1,5 +1,5 @@
-#Compile
-- Debian-based ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast -Wno-write-strings -fomit-frame-pointer -flto``
+# Compile
+- Debian-Based ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast -Wno-write-strings -fomit-frame-pointer -flto``
 - try ``-lfreeglut`` instead of ``-lglut`` if prefer/problems
 
 - Windows ``g++ src/main.cpp  -o bin/app -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast -Wno-write-strings -fomit-frame-pointer -flto``
