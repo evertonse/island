@@ -1,5 +1,6 @@
 #pragma once
 #include "utils/common.h"
+#include <random>
 
 namespace cyx {
     template<typename T>
@@ -33,4 +34,11 @@ namespace cyx {
         T relative = (b - a * dot).normalize();
         return a * std::cos(theta) + relative * std::sin(theta);
     }
+
+    int random_int(int index) {
+    persistent_data std::mt19937 gen(std::random_device{}());
+    std::uniform_int_distribution<> dist(0, index);  // define the distribution
+
+    return dist(gen);  // generate and return a random number between 0 and index (inclusive)
+}
 }

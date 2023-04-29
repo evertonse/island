@@ -20,6 +20,7 @@ using std::cout;
 using std::endl;
 
 void init_gl();
+void update_title(Window& win, f32 dt);
 void on_scroll(f32 dir);
 
 void on_mouse(Window&, f32 x, f32 y);
@@ -181,7 +182,8 @@ void on_destroy(Window& win) {
     // Loop de renderização principal
 
 void on_update(Window& win, f64 dt) {
-
+// Creates new title
+    update_title(win,dt);
     for (auto& item : key_is_down) {
         if (item.second){
             cam.on_key(item.first, delta_time);
@@ -194,7 +196,7 @@ void on_update(Window& win, f64 dt) {
 
     // Definir qual ou quais buffers precisam ser limpos
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    world.tick_positions(dt);
     // Vincular textura
     tex_wall.bind();
 
@@ -392,6 +394,12 @@ void init_gl(){
 	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
 	glShadeModel(GL_SMOOTH);
+}
+
+void update_title(Window& win, f32 dt) {
+	std::string fps = std::to_string((1.0 / dt));
+	std::string title = "Island  " + fps + " fps";
+    win.set_title(title.c_str());
 }
 
 int main() {

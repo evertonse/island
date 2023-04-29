@@ -1,5 +1,6 @@
 #pragma once
 #include "game/world.hpp"
+#include "world.hpp"
 
 using namespace cyx;
 
@@ -11,23 +12,28 @@ namespace island {
         volume.ydim = ydim;
         volume.zdim = zdim;
         volume.data = new EntityType[xdim * ydim * zdim];
+        for (size_t i = 0; i < xdim * ydim * zdim; i++) {
+            volume.data[i] = EntityType::NONE;    
+        }
+        
         return volume;
     }
 
     const EntityType& Volume::operator()(i32 x, i32 y, i32 z) const {
         assert(x < xdim && y < ydim && z < zdim);
-        x = clamp(x, 0, (int)xdim-1); // clamp x to [0, xdim-1]
-        y = clamp(y, 0, (int)ydim-1); // clamp y to [0, ydim-1]
-        z = clamp(z, 0, (int)zdim-1); // clamp z to [0, zdim-1]
         return data[x + y*xdim + z*xdim*ydim];
     }
 
     EntityType& Volume::operator()(i32 x, i32 y, i32 z) {
         assert(x < xdim && y < ydim && z < zdim);
-        x = clamp(x,0, (int)xdim-1); // clamp x to [0, xdim-1]
-        y = clamp(y,0, (int)ydim-1); // clamp y to [0, ydim-1]
-        z = clamp(z,0, (int)zdim-1); // clamp z to [0, zdim-1]
         return data[x + y*xdim + z*xdim*ydim];
+    }
+
+    bool Volume::on_bounds(i32 x, i32 y, i32 z) const {
+        return (
+                (x < xdim && y < ydim && z < zdim)
+            &&  (x >= 0   && y >= 0   && z >= 0)
+        );
     }
 
     void Volume::destroy(Volume* self ){
@@ -88,7 +94,7 @@ namespace island {
             case EntityType::SAND_BLOCK: {
                 if (sand_block_loaded == false){
                     TripleBufferMesh::cube(&sand_block->mesh);
-                    sand_block->texture.load("assets/textures/sand.jpg");
+                    sand_block->texture.load("assets/textures/sand3.jpg");
                     sand_block_loaded = true; 
                 }
                 e.model = sand_block; 
@@ -146,133 +152,191 @@ namespace island {
 
     World& World::generate_volume() {
         this->volume = Volume::make(dimensions.x, dimensions.y, dimensions.z);
+
+        this->water_level = (f32(lake_percent)/(island_percent+lake_percent))* volume.ydim;
+
         for (int x = 0; x < volume.xdim; x++) {
             for (int z = 0; z < volume.zdim; z++) {
-                int height = std::round(simplex2(z,x, 3, 50.f, 0.193f)*volume.ydim);
-
+                int height = std::round(simplex2(z,x, 8, 750.f, 0.593f)*volume.ydim);
+                //int height = water_level;
+                height_map[{x,z}] = height;
                 // The free list is places bove water level that are
                 // 1 unit above a block 
                 if (height > water_level) {
-                    free_list.emplace_back(x, height ,z);
-                    std::cout 
-                        << "free_list added : x:" <<x 
-                        << " y:" << height 
-                        << " z:" << z 
-                        << " size:" << free_list.size()
-                        << '\n';
-                }
-                else {
-                    height_map[{x,z}] = height;
+                    free_list.push_back( new veci3(x, height ,z));
                 }
 
                 for (int y = height - 1; y >= 0; y--) {
                     EntityType type = EntityType::SAND_BLOCK; 
                     volume(x,y,z)   = type;
+                    
+                }
+            }
+        }
+
+        int suffocated_count = 0;
+        int not_suffocated_count = 0; 
+        int total_count = 0;
+        for (int x = 0; x < volume.xdim; x++) {
+            for (int z = 0; z < volume.zdim; z++) {
+                int height = height_map[{x,z}];
+                for (int y = height - 1; y >= 0; y--) {
+                    EntityType type = volume(x,y,z);
+
+                    total_count ++; 
+                    // Check if the entity is "suffocated" by other entities around it
+                    // that way we save a bit when rendering
+                    bool is_suffocated = true;
+                            
+                    for (const auto& neighbour : {
+                        veci3{x,y+1,z},
+                        veci3{x,y-1,z},
+
+                        veci3{x,y,z+1},
+                        veci3{x,y,z-1},
+
+                        veci3{x+1,y,z},
+                        veci3{x-1,y,z},
+                    }) {
+
+                        const vec3& other = neighbour;
+                        if (!volume.on_bounds(neighbour.x, neighbour.y, neighbour.z)){
+                            suffocated_count ++;
+                            is_suffocated = false;
+                            continue;
+                        }
+
+                        if (volume(neighbour.x, neighbour.y, neighbour.z) == EntityType::NONE) {
+                            is_suffocated = false;
+                            suffocated_count ++;
+                            break;
+                        }else {
+
+                            not_suffocated_count ++;
+                        }
+
+                    }
+                    if (is_suffocated || type == EntityType::NONE) {
+                        continue; // skip creating the entity for this block
+                    }
+                    //
                     Entity e = Entity::make(type);
                     e.world_position = veci3(x,y,z);
                     e.transform.position = vec3(f32(x),f32(y),f32(z)) ;
                     entities.push_back(e);
                 }
-               
             }
         }
-        std::cout << "terrestrial1_count" << terrestrial1_count;
 
-        for (auto& item : free_list) {
-            std::cout 
-                << "free_list rfor: x:" <<item.x 
-                << " y:" << item.y 
-                << " z:" << item.z 
-                << " size:" << free_list.size()
-                << '\n';
-        }
 
-        for (size_t i = 0; i < terrestrial1_count; i++) {
-            EntityType type = EntityType::TERRESTRIAL1; 
-            if (free_list.empty()) {
-                continue;
-            }
-            free_list.pop_back();
-            //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
-            veci3 pos = free_list[free_list.size()-1];
-            std::cout
-                    << "free_list terrestrial1: x:" << pos.x 
-                    << " y:" << pos.y 
-                    << " z:" << pos.z
-                    << " size:" << free_list.size()
-                    << '\n';
-
-            volume(pos.x,pos.y,pos.z)   = type;
-            Entity e = Entity::make(type);
-            e.world_position = pos;
-            e.transform.scale = 2.5f;
-            e.transform.position = vec3(pos.x, pos.y-0.5f, pos.z+0.22f) ;
-            entities.push_back(e);
-            /* code */
-        }
+        std::cout << " suffocated  count "<< suffocated_count 
+                  << " not_suffocated  count "<< not_suffocated_count 
+                  << " total  count "<< total_count ;
         
-        for (size_t i = 0; i < terrestrial2_count; i++) {
-            EntityType type = EntityType::TERRESTRIAL2; 
-            if (free_list.empty()) {
-                continue;
+          auto prepare_entites  = [&](u32 count, EntityType type, f32 scale, vec3 translation) {
+            for (size_t i = 0; i < count ; i++) {
+                if (free_list.empty()) {
+                    continue;
+                }
+                veci3 pos = random_from_free_list();
+                volume(pos.x,pos.y,pos.z)   = type;
+                Entity e = Entity::make(type);
+                e.world_position = pos;
+                e.transform.scale = scale;
+                e.transform.position  = vec3(pos.x, pos.y-0.5f, pos.z) + translation;
+
+                e.transform.last_position =   e.transform.position;
+                e.transform.new_position  =   e.transform.position;
+
+                entities.push_back(e);
+                if (type == EntityType::TERRESTRIAL1 || type == EntityType::TERRESTRIAL2) {
+                    movable_entities.push_back(&(entities.back()));
+                }
             }
-            free_list.pop_back();
-            //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
-            veci3 pos = free_list[free_list.size()-1];
-            std::cout
-                    << "free_list terrestrial2: x:" << pos.x 
-                    << " y:" << pos.y 
-                    << " z:" << pos.z
-                    << " size:" << free_list.size()
-                    << '\n';
+        };
 
-            volume(pos.x,pos.y,pos.z)   = type;
-            Entity e = Entity::make(type);
-            e.world_position = pos;
-            e.transform.scale = 1.35f;
-            e.transform.position = vec3(pos.x, pos.y-0.5f, pos.z+0.22f) ;
-            entities.push_back(e);
-            /* code */
-        }
-
-        for (size_t i = 0; i < plant1_count; i++) {
-            EntityType type = EntityType::PLANT1; 
-            if (free_list.empty()) {
-                continue;
-            }
-
-            free_list.pop_back();
-            //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
-            veci3 pos = free_list[free_list.size()-1];
-            volume(pos.x,pos.y,pos.z) = type;
-
-            Entity e = Entity::make(type);
-            e.world_position = pos;
-            e.transform.scale = 1.9f;
-            e.transform.position = vec3(pos.x, pos.y-0.5f, pos.z) ;
-            entities.push_back(e);
-            /* code */
-        }
-
-        for (size_t i = 0; i < plant2_count; i++) {
-            EntityType type = EntityType::PLANT2; 
-            if (free_list.empty()) {
-                continue;
-            }
-
-            free_list.pop_back();
-            //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
-            veci3 pos = free_list[free_list.size()-1];
-            volume(pos.x,pos.y,pos.z) = type;
-
-            Entity e = Entity::make(type);
-            e.world_position = pos;
-            e.transform.scale = 1.9f;
-            e.transform.position = vec3(pos.x, pos.y-0.5f, pos.z) ;
-            entities.push_back(e);
-            /* code */
-        }
+        prepare_entites(terrestrial1_count, EntityType::TERRESTRIAL1, 2.5f, {0,0,0.22f});
+        prepare_entites(terrestrial2_count, EntityType::TERRESTRIAL2, 1.15f, {0,0,0});
+        prepare_entites(plant1_count, EntityType::PLANT1, 1.9f, {0,0,0.0f});
+        prepare_entites(plant2_count, EntityType::PLANT2, 1.9f, {0,0,0.0f});
 
         return *this;
+    }
+
+    void World::update_positions() {
+        f32 time_interval = 0.015;
+        
+        for (auto e : movable_entities) {
+            int x = e->world_position.x;
+            int y = e->world_position.y;
+            int z = e->world_position.z;
+            for (const auto& neighbour : {
+                    //veci3{x,y+1,z},// we ignore y direction for now
+                    //veci3{x,y-1,z},// we ignore y direction for now
+                    veci3{x,y,z+1},
+                    veci3{x,y,z-1},
+
+                    veci3{x+1,y,z},
+                    veci3{x-1,y,z},
+                })
+            {
+                if (!volume.on_bounds(neighbour.x, neighbour.y, neighbour.z)){
+                    continue;
+                }
+
+                if ( 
+                    //  Check if it is clear
+                    volume(neighbour.x, neighbour.y, neighbour.z) == EntityType::NONE
+                    &&
+                    //Check if below is ground
+                    volume(neighbour.x, neighbour.y-1, neighbour.z) == EntityType::SAND_BLOCK
+                ) {
+                    // Upodate the new world position for this entity
+                    e->world_new_position = veci3(neighbour.x, neighbour.y, neighbour.z);
+                    // We need to update the volume soon, might as well try now
+                    volume(e->world_new_position.x, e->world_new_position.y, e->world_new_position.z) = e->type;
+                    // Mark as free
+                    volume(e->world_position.x, e->world_position.y, e->world_position.z) = EntityType::NONE;
+                    e->transform.new_position = vec3((f32)neighbour.x, (f32)neighbour.y, (f32)neighbour.z);
+                    break;
+                }
+            }
+        }
+    }
+
+    void World::tick_positions(f32 dt) {
+        persistent_data f32 timer = 0;
+        persistent_data f32 time_to_interpolate = 1.0;
+
+        timer += dt;
+        f32 t = std::min(timer / time_to_interpolate, 1.0f);
+
+        for(auto& e : movable_entities) {
+            e->transform.position.x += dt;
+            e->transform.position = e->transform.last_position + (e->transform.new_position - e->transform.last_position) * t;
+        }
+
+        if (timer >= time_to_interpolate) {
+            std::cout 
+                << "timer " << timer;
+            timer = 0;
+            for(auto& e : movable_entities) {
+
+                std::cout << "e.type" << u32(e->type);
+                e->transform.last_position = e->transform.new_position;
+                update_positions();
+            }
+        }
+    }
+    veci3 World::random_from_free_list() {
+        assert(! free_list.empty()); 
+        int index = random_int(free_list.size()-1);
+        auto iter  = std::next(free_list.begin(), index);
+        //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
+        veci3* pos = std::move(*iter);
+        veci3 v = veci3(pos->x,pos->y,pos->z);
+        free_list.erase(iter);
+        delete pos;
+        return v;
     }
 } // namespace cyx::island

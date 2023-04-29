@@ -4,24 +4,92 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <utility>
 #include "utils/common.h"
 #include "math/useful.hpp"
+//#define CYX_USE_REFERENCE_VEC
 
 namespace cyx {
 
-	template <class T, u32 DIM>
-	struct vec {
+	template <class T, u32 DIM, typename Enable = void>
+	class vec {
 	
 	public:
-		std::array<T,DIM> numbers;
-	
+    #if defined(CYX_USE_REFERENCE_VEC) 
+	    std::array<T,DIM> numbers;
+
+        #if !defined(CYX_VEC_SPECIALIZATION)
+        T& x = numbers[0];
+        T& y = numbers[1];
+        T& z = DIM == 2 ? numbers[1]:numbers[2]; 
+        T& w = DIM == 2 ? numbers[1]: DIM == 2? numbers[2] : numbers[3]; 
+
+        T& u = x;
+        T& v = y;
+
+        T& width = x;
+        T& height = y;
+
+        T& r = x;
+        T& g = y;
+        T& b = z;
+        T& a = w;
+        #endif
+    #else
+        union {
+            std::array<T, DIM> numbers;
+            struct { T x, y, z, w; };
+            struct { T r, g, b, a; };
+            struct { T u, v; };
+            struct { T s, t, p, q; };
+        };
+    #endif
         using vec_concrete = vec<T,DIM>;
+        using vec2 = vec<f32,2>;
+        using vec3 = vec<f32,3>;
+        using vec4 = vec<f32,4>;
+
+        using veci2 = vec<i32,2>;
+        using veci3 = vec<i32,3>;
+        using veci4 = vec<i32,4>;
+
 	public:
 		vec() {}
+        vec& operator=(const vec& other) {
+            if (this != &other) {
+                std::copy(other.numbers.begin(), other.numbers.end(), numbers.begin());
+            }
+            return *this;
+        }
+
+        template<typename... Args>
+        vec(Args... args) {
+            static_assert(sizeof...(args) <= DIM, "Too many arguments for vector dimension.");
+            T temp[DIM] = { args... };
+            std::copy(temp, temp + sizeof...(args), numbers.begin());
+        }
+
+        //template <typename AnotherType> 
+        //vec_concrete& operator=(const vec<AnotherType, DIM>& other){
+            //size_t count = this->numbers.size();
+            //for (size_t i = 0; i < count; i++) {
+                //(*this)[i] = static_cast<T>(other[i]);
+            //} 
+            //return *this;
+        //}
+
+        vec_concrete& operator=(vec_concrete&& other) noexcept {
+            if (this != &other) {
+                numbers = std::move(other.numbers);
+            }
+            return *this;
+        }
+
 		vec(std::initializer_list<T> values){
 			size_t index = 0;
 			for (auto& val : values) {
-				numbers[index++] = val;
+				numbers[index] = val;
+                index++;
 			}
 		}
         
@@ -38,23 +106,19 @@ namespace cyx {
            } 
         }
 
-
-        template <typename... Args>
-        vec(Args... args) : numbers{{args...}} {
-            static_assert(sizeof...(args) == DIM, "Number of arguments does not match vector dimension.");
+        
+        template <typename AnotherType> 
+        vec(const vec<AnotherType, DIM>& other){
+            for(int i = 0; i < DIM; i++) {
+                numbers[i] = (T)other[i];
+            } 
         }
 
 		T& operator[]  (i32 index) { return numbers[index]; }
 		const T& operator[]  (i32 index) const { return numbers[index]; }
 		T& operator()  (i32 index) { return numbers[index]; }
 		const T& operator()  (i32 index) const { return numbers[index]; }
-        vec_concrete& operator=(const vec_concrete& other) {
-            size_t count = this->numbers.size();
-            for (size_t i = 0; i < count; i++) {
-               (*this)[i] = other[i];
-            }
-           return *this; 
-        }
+
         // Copy assignment operator
         //vec& operator=(const vec& other) { if (this != &other) { numbers = other.numbers; } return *this; }
 		//vec operator=(const vec& v) = default;
@@ -92,6 +156,10 @@ namespace cyx {
 			return v;
 		}
 
+        static f32 length(vec other ) {
+            return std::sqrt((f32)other.dot(other));
+        }
+
 		T dot(const vec& other) const {
 			auto acc = static_cast<T>(0);
 
@@ -123,7 +191,7 @@ namespace cyx {
 		vec  operator -  (const vec& other) const { 		
 			vec new_vec;
 			for (size_t i = 0; i < DIM; i++) {
-				new_vec[i] = other[i] - (*this)[i];
+				new_vec[i] = (*this)[i] - other[i] ;
 			}
 			return new_vec; 
 		}
@@ -227,7 +295,13 @@ namespace cyx {
 			return true; 
 		}
 	
-		bool operator != (const vec& other) const { return !this->operator==(other); }
+		bool operator != (const vec& other) const { 
+            for (size_t i = 0; i < DIM; i++) {
+                if((*this)[i] != other[i])
+                    return false;  
+            }
+			return true; 
+        }
 
 		
 		/*==== Utilities for vec ====*/
@@ -243,7 +317,8 @@ namespace cyx {
 		auto str() const -> const std::string  { 
 			std::stringstream s;
 
-			s << "vec" << DIM << "(";
+			//s << "vec" << DIM << "("; // opting for showing the dimension but I find it confusing alotta times
+			s << "vec" << "(";
 			for (size_t i = 0; i < DIM-1; i++) {
 				s << this->numbers[i] << ", ";
 			}
@@ -256,58 +331,18 @@ namespace cyx {
 		T* end()   { return (&numbers[DIM]); } //
 		
 		T* data()  { return numbers.data(); }
-	};
 
-    struct vec2 : public vec<f32,3> {
-        using MyBase   = vec<f32,3>;
-        
-        union {
-            struct {f32 &x,&y;};
-            struct {f32 &r,&g;};
-            struct {f32 &u,&v;};
-        };
-        
-        vec2& operator=(const vec2& other) { if (this != &other) { numbers = other.numbers; } return *this; }
-        vec2(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]){ };
-        vec2() :MyBase(),x(numbers[0]),y(numbers[1]){ };
-        vec2(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]){ };
-        vec2(f32 x, f32 y) :MyBase(std::initializer_list<f32>({x,y})),x(numbers[0]),y(numbers[1]){ };
-
-    };
-
-	struct vec3 : public vec<f32,3> {
-        using Type = f32;
-		using MyBase   = vec<Type,3>;
-		using ArrayType = std::array<Type,3>;
-		
-		union {
-			struct {f32 &x,&y,&z;};
-			struct {f32 &r,&g,&b;};
-		};
-
-        vec3& operator=(const vec3& other) {
-            const u32 count = numbers.size();
-            for (u32 i = 0; i < count; i++) {
-                (*this)[i] = other[i];
-            }
-            return (*this);
-        }
-
-		vec3(Type * v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(f32 x, f32 y, f32 z) :MyBase(std::initializer_list<f32>({x,y,z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(vec2 v, f32 z) :MyBase(std::initializer_list<f32>({v.x, v.y, z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
         vec3 cross(const vec3& other) const {
-            return vec3(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+            vec3& v1 = this;
+            vec3& v2 = other;
+            return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         } 
 
         static vec3 cross(const vec& v1, const vec& v2) {
             return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         }
         static vec3 left(const vec3& rotation) {
-            float yaw = radians(rotation.y);
+            float yaw = radians(rotation[1]);
             float x = std::cos(yaw);
             float y = 0;
             float z = std::sin(yaw);
@@ -320,54 +355,71 @@ namespace cyx {
         }
 	};
 
-	struct vec4 : public vec<f32,4> {
-		using MyBase   = vec<f32,4>;
-		
-		union {
-			struct {f32 &x,&y,&z,&w;};
-			struct {f32 &r,&g,&b,&a;};
-		};
-		
-		vec4(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-		vec4() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[2]){ };
-		vec4(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[2]){ };
-		vec4(f32 x, f32 y, f32 z,f32 w) :MyBase(std::initializer_list<f32>({x,y,z,w})),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-		vec4(vec3 v, f32 w) :MyBase(std::initializer_list<f32>({v.x, v.y, v.z,w})),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-	};	
+#if defined (CYX_VEC_SPECIALIZATION)
+    template <class T, u32 DIM>
+    class vec<T, DIM, typename std::enable_if<DIM == u32(4)>::type> {
+    public:
+        std::array<T,DIM> numbers;
+        T& x = numbers[0];
+        T& y = numbers[1];
+        T& z = numbers[2];
+        T& w = numbers[3];
 
-    struct veci3 : public vec<i32,3> {
+        T& u = x;
+        T& v = y;
 
-        using Type   = i32;
-		using MyBase = vec<i32,3>;
-		
-		union {
-			struct {	i32 &x,&y,&z;};
-			struct {	i32 &r,&g,&b;};
-		};
-		
-        veci3 operator=(const veci3& other) { {x = other.x; y = other.y;z = other.z; } return *this; }
-		veci3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3(std::initializer_list<i32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3(Type x, Type y, Type z) :MyBase(std::initializer_list<Type>({x,y,z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-	};
+        T& width = x;
+        T& height = y;
 
-    struct veci2 : public vec<i32,3> {
-
-        using Type = i32;
-        using MyBase   = vec<i32,3>;
-        
-        union {
-            struct {i32 &x,&y;};
-            struct {i32 &r,&g;};
-            struct {i32 &u,&v;};
-            struct {i32 &width,&height;};
-        };
-        
-        veci2& operator=(const veci2& other) { {x = other.x; y = other.y; } return *this; }
-        veci2(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]){ };
-        veci2() :MyBase(),x(numbers[0]),y(numbers[1]){ };
-        veci2(std::initializer_list<i32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]){ };
-        veci2(i32 x, i32 y) :MyBase(std::initializer_list<i32>({x,y})),x(numbers[0]),y(numbers[1]){ };
-
+        T& r = x;
+        T& g = y;
+        T& b = z;
+        T& a = w;
     };
+
+    template <class T, u32 DIM>
+    class vec<T, DIM, typename std::enable_if<DIM == u32(3)>::type> {
+    public:
+        std::array<T,DIM> numbers;
+        T& x = numbers[0];
+        T& y = numbers[1];
+        T& z = numbers[2];
+
+        T& u = x;
+        T& v = y;
+
+        T& width = x;
+        T& height = y;
+
+        T& r = x;
+        T& g = y;
+        T& b = z;
+    };
+
+    template <class T, u32 DIM>
+    class vec<T, DIM, typename std::enable_if<DIM == u32(2)>::type> {
+    public:
+        std::array<T,DIM> numbers;
+        T& x = numbers[0];
+        T& y = numbers[1];
+
+        T& u = x;
+        T& v = y;
+
+        T& width = x;
+        T& height = y;
+
+        T& r = x;
+        T& g = y;
+    };
+#endif
+
+   using vec2 = vec<f32, u32(2)>;
+   using vec3 = vec<f32, u32(3)>;
+   using vec4 = vec<f32, u32(4)>;
+
+   using veci2 = vec<i32,u32(2)>;
+   using veci3 = vec<i32,u32(3)>;
+   using veci4 = vec<i32,u32(4)>;
+        
 };

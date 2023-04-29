@@ -53,9 +53,9 @@ struct AccelCamera {
 
     void update_vectors() {
         vec3 dir;
-        dir.x = std::cos(radians(this->yaw)) * std::cos(radians(this->pitch));
-        dir.y = std::sin(radians(this->pitch));
-        dir.z = std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
+        dir.x = -std::cos(radians(this->yaw)) * std::cos(radians(this->pitch));
+        dir.y = -std::sin(radians(this->pitch));
+        dir.z = -std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
         this->direction = dir.normalize();
         this->right = vec3::cross(this->direction, this->world_up).normalize();  
         this->up = vec3::cross(this->right, this->direction).normalize();
@@ -94,7 +94,7 @@ struct AccelCamera {
         else if (key == Key::W) {
             acceleration += vec3::right(vec3(pitch,yaw,0.0)) * SPEED;
         }
-        else if ((key == Key::E) || (key == Key::CTRL)) {
+        else if ((key == Key::E) || (key == Key::CTRL) || key == Key::SHIFT) {
             acceleration.y -= SPEED * 2;
         }
         else if (key == Key::Q || key == Key::SPACE){
