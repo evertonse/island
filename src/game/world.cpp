@@ -312,17 +312,16 @@ namespace island {
         f32 t = std::min(timer / time_to_interpolate, 1.0f);
 
         for(auto& e : movable_entities) {
-            e->transform.position.x += dt;
-            e->transform.position = e->transform.last_position + (e->transform.new_position - e->transform.last_position) * t;
+            e->transform.position.z += dt;
+            //e->transform.position = e->transform.last_position + (e->transform.new_position - e->transform.last_position) * t;
         }
 
         if (timer >= time_to_interpolate) {
-            std::cout 
-                << "timer " << timer;
+            //std::cout << "timer " << timer;
             timer = 0;
             for(auto& e : movable_entities) {
 
-                std::cout << "e.type" << u32(e->type);
+                //std::cout << "e.type" << u31(e->type);
                 e->transform.last_position = e->transform.new_position;
                 update_positions();
             }

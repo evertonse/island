@@ -2,10 +2,43 @@
 
 
 namespace cyx {
+     const f32 Skybox::vertices[] {
+        -1.0f, -1.0f,  1.0f,//        7--------6
+         1.0f, -1.0f,  1.0f,//       /|       /|
+         1.0f, -1.0f, -1.0f,//      4--------5 |
+        -1.0f, -1.0f, -1.0f,//      | |      | |
+        -1.0f,  1.0f,  1.0f,//      | 3------|-2
+         1.0f,  1.0f,  1.0f,//      |/       |/
+         1.0f,  1.0f, -1.0f,//      0--------1
+        -1.0f,  1.0f, -1.0f
+    };
+
+
+    constexpr u32 Skybox::indices[] {
+        // Right
+        1, 2, 6,
+        6, 5, 1,
+        // Left
+        0, 4, 7,
+        7, 3, 0,
+        // Top
+        4, 5, 6,
+        6, 7, 4,
+        // Bottom
+        0, 3, 2,
+        2, 1, 0,
+        // Back
+        0, 1, 5,
+        5, 4, 0,
+        // Front
+        3, 7, 6,
+        6, 2, 3
+    };
+ 
     void Skybox::init(const char* directory_path, const char* extension) {
         std::string dir;
-        dir = std::regex_replace(directory_path, std::basic_regex("/+"), "/");
-        dir = std::regex_replace(dir,std::basic_regex("/$"),"");
+        dir = std::regex_replace(directory_path, std::regex("/+"), "/");
+        dir = std::regex_replace(dir,std::regex("/$"),"");
         shader = Shader("assets/shaders/skybox.glsl");
         shader.bind();
         shader.compile();
@@ -15,7 +48,7 @@ namespace cyx {
 
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Skybox::vertices), &Skybox::vertices, GL_STATIC_DRAW);
         
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);

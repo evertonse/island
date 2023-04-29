@@ -13,6 +13,8 @@
 #include "math/useful.hpp"
 
 //#include "graphics/rendering.hpp"
+
+#include "graphics/skybox.hpp"
 #include "graphics/texture.hpp"
 #include "graphics/vertex.hpp"
 #include "graphics/shader.hpp"
@@ -21,7 +23,6 @@
 #include "graphics/event.hpp"
 #include "graphics/application.hpp"
 #include "graphics/window.hpp"
-#include "graphics/skybox.hpp"
 
 
 #include "game/world.hpp"

@@ -19,6 +19,7 @@ struct Flags {
 using std::cout;
 using std::endl;
 
+
 void init_gl();
 void update_title(Window& win, f32 dt);
 void on_scroll(f32 dir);
