@@ -46,6 +46,10 @@ Shader light(
     "assets/shaders/light.glsl"
 );
 
+Shader water(
+    "assets/shaders/water.glsl"
+);
+
 std::vector<Entity> entities;
 SimpleTexture tex_wall;
 SimpleTexture tex_horse;
@@ -171,17 +175,21 @@ auto on_create(Window& win) {
     shader.compile();
     light.bind();
     light.compile();
+    water.bind();
+    water.compile();
 
     world.generate_volume();
+    world.generate_water();
     skybox.init();
 }
+
 
 void on_destroy(Window& win) {
 
     //glDeleteVertexArrays(1, &VAO); // Opcional
     //glDeleteBuffers(1, &VBO); // Opcional
 }
-    // Loop de renderização principal
+
 
 void on_update(Window& win, f64 dt) {
 // Creates new title
@@ -219,6 +227,10 @@ void on_update(Window& win, f64 dt) {
     //std::cout << " Fragment: " << light.src(ShaderType::FRAGMENT) << "Vertex : " << light.src(ShaderType::VERTEX); std::cin.get();
     light.uniform_vec3("cam_position",         cam.position.data());
     
+    water.bind();
+    water.uniform_mat4("projection",  projection.data(),true);
+    water.uniform_mat4("view",        view.data(), true);
+    water.uniform_vec3("cam_position",  cam.position.data());
 
 
     // Trazer os "back buffers" para frente
@@ -245,6 +257,11 @@ void on_update(Window& win, f64 dt) {
             std::cout << e << std::cin.get();
         }
         mat4 model = mat4::identity();
+
+        if(world.is_movable(e)) {
+            model = mat4::rotate(model, vec3::angle(e.transform.orientation,{1.0,0.0,0.0}), {0.0,1.0,0.0});
+        } 
+
         model = mat4::scale(model, e.transform.scale);
         // The width of a block is 2 so we need to translate by 2
         // but since it has some z-value fightin we spread them apart
@@ -254,6 +271,19 @@ void on_update(Window& win, f64 dt) {
         e.model->draw();
     }
 
+    persistent_data f32 time = dt;
+    time += dt;
+    water.bind();
+    water.uniform_float("time", time);
+    for(auto& e : world.water_entities) {
+        mat4 model = mat4::identity();
+        model = mat4::scale(model, e.transform.scale);
+        model = mat4::translate(model, vec3(e.transform.position)*2.001);
+        water.uniform_mat4("model", model.data(),true);
+        e.model->draw();
+    }
+
+    light.bind();
     int i = 0;
     for (auto& e : entities) {
         mat4 model = mat4::identity();

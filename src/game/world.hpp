@@ -11,7 +11,8 @@
 #include "math/useful.hpp"
 
 #define ISLAND_CUBE_VOLUME 2.0
-#define ISLAND_FLAT_TERRAIN true 
+#define ISLAND_FLAT_TERRAIN false 
+
 
 
 using namespace cyx;
@@ -21,8 +22,8 @@ namespace island {
     enum class EntityType :u32 {
         NONE = 0,
         TERRAIN_BLOCK,
-        SAND_BLOCK,
         WATER_BLOCK,
+        SAND_BLOCK,
         PLANT1, PLANT2,
         TERRESTRIAL1, TERRESTRIAL2
     };
@@ -108,8 +109,10 @@ namespace island {
 
         std::vector<Entity*> movable_entities;
         std::vector<Entity> entities;
-
+        std::vector<Entity> water_entities;
+        bool inline is_movable(const Entity&);
         void  generate_volume();
+        void  generate_water();
         void tick_positions(f32 dt);
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
         void update_positions();

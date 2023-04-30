@@ -76,9 +76,11 @@ namespace island {
         return os;
     }
 
+
     std::ostream& operator<<(std::ostream& os, const Entity& e) {
         os 
             << "\nPosition " << e.transform.position
+            << "\nOrientation " << e.transform.orientation
             //<< "\nLast_position " << e.transform.last_position
             //<< "\nNew_position " << e.transform.new_position
             << "\nWorld Position "     << e.world_position
@@ -174,6 +176,7 @@ namespace island {
         persistent_data int id_count = 0;
         persistent_data Model* terrain_block = new Model;
         persistent_data Model* sand_block = new Model;
+        persistent_data Model* water_block = new Model;
         persistent_data Model* terrestrial1  = new Model;
         persistent_data Model* terrestrial2  = new Model;
         persistent_data Model* terrestrial3  = new Model;
@@ -181,6 +184,7 @@ namespace island {
         persistent_data Model* plant1 = new Model;
         persistent_data Model* plant2 = new Model;
         persistent_data bool terrain_block_loaded = false;
+        persistent_data bool water_block_loaded = false;
         persistent_data bool sand_block_loaded = false;
         persistent_data bool terrestrial1_loaded  = false;
         persistent_data bool terrestrial2_loaded  = false;
@@ -219,11 +223,21 @@ namespace island {
                 }
                 e.model = terrain_block; 
                 break;
-            } 
+            }
+            case EntityType::WATER_BLOCK: {
+                if (water_block_loaded == false){
+                    TripleBufferMesh::cube(&water_block->mesh);
+                    water_block->texture.load("assets/textures/water3.png");
+                    water_block_loaded = true; 
+                }
+                e.model = water_block; 
+                break;
+            }  
             case EntityType::SAND_BLOCK: {
                 if (sand_block_loaded == false){
                     TripleBufferMesh::cube(&sand_block->mesh);
                     sand_block->texture.load("assets/textures/sand3.jpg");
+                    //sand_block->texture.load("assets/textures/sand.jpg");
                     sand_block_loaded = true; 
                 }
                 e.model = sand_block; 
@@ -276,10 +290,15 @@ namespace island {
         delete self->model;
     }
 
+    bool World::is_movable(const Entity & e) {
+        if ( e.type == EntityType::TERRESTRIAL1 || e.type == EntityType::TERRESTRIAL2) {
+            return true;
+        }
+        return false;
+    }
 
-
-
-    void World::generate_volume() {
+    void World::generate_volume()
+    {
         this->volume = Volume::make(dimensions.x, dimensions.y, dimensions.z);
         assert(island_percent+lake_percent == 100); 
         this->water_level = std::floor(((f32)(lake_percent)/(island_percent+lake_percent))* volume.ydim);
@@ -388,8 +407,6 @@ namespace island {
         return;
     }
 
-
-
     void World::prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation) {
         for (size_t i = 0; i < count ; i++) {
             if (free_list.empty()) {
@@ -416,6 +433,7 @@ namespace island {
                 (&entities[index])->world_new_position.x = (entities[index]).world_position.x;
                 (&entities[index])->world_new_position.y = (entities[index]).world_position.y;
                 (&entities[index])->world_new_position.z = (entities[index]).world_position.z;
+                (entities[index]).transform.orientation = vec3(0,0,1);
                 movable_entities.push_back(&entities[index]);
             }
         }
@@ -515,6 +533,10 @@ namespace island {
                     e->world_new_position.x  =  e->world_position.x + neighbour.x;
                     e->world_new_position.y  =  e->world_position.y + neighbour.y;
                     e->world_new_position.z  =  e->world_position.z + neighbour.z;
+
+                    
+                    e->transform.last_orientation = e->transform.orientation; 
+                    e->transform.new_orientation = vec3(neighbour);
                     
                     e->transform.last_position = e->transform.position;
                     e->transform.new_position.x = (f32)e->transform.last_position.x + neighbour.x;
@@ -547,6 +569,7 @@ namespace island {
             //e->transform.position = e->transform.new_position;
             //e->transform.position = lerp(e->transform.last_position, e->transform.new_position, t);
             e->transform.position = (vec3(e->transform.last_position)* (1.0f - t)) + (vec3(e->transform.new_position)* t);
+            e->transform.orientation = (vec3(e->transform.last_orientation)* (1.0f - t)) + (vec3(e->transform.new_orientation)* t);
             //e->transform.position = (vec3(e->world_position)* (1.0f - t)) + (vec3(e->world_new_position)* t);
             //e->transform.position.y -= 0.5f; 
         }
@@ -568,5 +591,35 @@ namespace island {
         veci3* pos = std::move(*iter);
         free_list.erase(iter);
         return pos;
+    }
+    // Has to be called after
+    void World::generate_water() {
+        water_entities.reserve(volume.xdim + (int)volume.zdim);
+        for (int x = 0; x < (int)volume.xdim; x++) {
+            for (int z = 0; z < (int)volume.zdim; z++) {
+                for (
+                    int y = clamp((int)water_level,0,(int)volume.zdim);
+                    y >= 0;
+                    y--
+                ) {
+                    if (volume(x,water_level,z) == EntityType::NONE
+                        || x >= volume.xdim-1
+                        || z >= volume.zdim-1
+                        || x == 0
+                        || z == 0
+                    ) {
+                        Entity e = Entity::make(EntityType::WATER_BLOCK);
+                        e.world_position = veci3(x,y,z);
+                        e.world_new_position = veci3(e.world_position);
+                        e.transform.position = vec3(f32(x),f32(y),f32(z)) ;
+                        e.transform.last_orientation = vec3(e.transform.position);
+                        e.transform.new_position     = vec3(e.transform.position);
+                        water_entities.push_back(e);
+
+                        volume(x,y,z) = EntityType::WATER_BLOCK;
+                    }
+                }
+            }
+        }
     }
 } // namespace cyx::island

@@ -360,6 +360,14 @@ namespace cyx {
         static vec3 right(const vec3& rotation) {
             return -left(rotation);
         }
+
+        static f32 angle(const vec3& v1, const vec3& v2) {
+            f32 dot_product = v1.dot(v2);
+            float magnitude_product = length(v1) * length(v2);
+            float cos_theta = dot_product / magnitude_product;
+            float theta = std::acos(cos_theta);
+            return theta;
+        }
 	};
 
 #if defined (CYX_VEC_SPECIALIZATION)

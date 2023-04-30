@@ -4,10 +4,11 @@ version   = "c++20"
 
 #-O
 #optimize = "off"
-optimize = "off"
+optimize = "on"
+
 
 #debug = "on"
-debug = "on"
+debug = "off"
 
 binpath = "bin/"
 
