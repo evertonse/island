@@ -421,6 +421,9 @@ namespace island {
         }
     };
 
+
+    // NOTE SWEATY FUNCTION to implemente, you were calling this in a tight loop
+    // of movable entities, meaning it was being update n^2, which is obviously not correct
     void World::update_positions() {
         std::vector<std::tuple<veci3,EntityType>> updates; 
         bool first_time = true;
@@ -441,10 +444,10 @@ namespace island {
                 //veci3{x,y+1,z},
                 //veci3{x,y-1,z},
             };
+
             // Shuffle the next possible positions, but first add some probability of being
             // more likely to continue the the same direction
-            //shuffle(neighbours);
-
+            shuffle(neighbours);
 
             e->world_position.x = e->world_new_position.x;
             e->world_position.y = e->world_new_position.y;
@@ -502,11 +505,6 @@ namespace island {
                     //volume(e->world_position) == EntityType::NONE;
                     // We're finished a tick so we are in new world position
                     // Mark as free
-                    if (first_time) {
-                        std::cout 
-                            << "before we got a matchin new world position"
-                            << *e  << "\n";
-                    }
                     // Mark new ocupied place
                     volume(e->world_position.x,e->world_position.y, e->world_position.z) = e->type;
                     updates.push_back({
@@ -517,13 +515,6 @@ namespace island {
                     e->world_new_position.x  =  e->world_position.x + neighbour.x;
                     e->world_new_position.y  =  e->world_position.y + neighbour.y;
                     e->world_new_position.z  =  e->world_position.z + neighbour.z;
-                    
-                    if (first_time) {
-                        std::cout 
-                            << "After "
-                            << *e  << "\n";
-                        first_time = false;
-                    }
                     
                     e->transform.last_position = e->transform.position;
                     e->transform.new_position.x = (f32)e->transform.last_position.x + neighbour.x;
