@@ -6,6 +6,89 @@ using namespace cyx;
 
 namespace island {
 
+    Transform Transform::difference(const Transform &t1, const Transform &t2) {
+        Transform diff;
+        diff.position = t1.position - t2.position;
+        diff.new_position = t1.new_position - t2.new_position;
+        diff.last_position = t1.last_position - t2.last_position;
+
+        diff.orientation = t1.orientation - t2.orientation;
+        diff.new_orientation = t1.new_orientation - t2.new_orientation;
+        diff.last_orientation = t1.last_orientation - t2.last_orientation;
+
+        diff.scale = t1.scale - t2.scale;
+        diff.velocity = t1.velocity - t2.velocity;
+        diff.acceleration = t1.acceleration - t2.acceleration;
+        diff.active = t1.active != t2.active;
+        return diff;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Transform& transform) {
+        auto close = [](f32 value) -> f32 {
+            constexpr f32 tolerance = 0.001f;
+            if (std::abs(value) < tolerance) {
+                return 0.0f;
+            }
+            return value;
+        };
+
+        os << "\nPosition: (" << close(transform.position.x) << ", " << close(transform.position.y) << ", " << close(transform.position.z) << ") ";
+        os << "\nLast Position: (" << close(transform.last_position.x) << ", " << close(transform.last_position.y) << ", " << close(transform.last_position.z) << ") ";
+        os << "\nNew Position: (" << close(transform.new_position.x) << ", " << close(transform.new_position.y) << ", " << close(transform.new_position.z) << ") ";
+        os << "\nOrientation: (" << close(transform.orientation.x) << ", " << close(transform.orientation.y) << ", " << close(transform.orientation.z) << ") ";
+        os << "\nLast Orientation: (" << close(transform.last_orientation.x) << ", " << close(transform.last_orientation.y) << ", " << close(transform.last_orientation.z) << ") ";
+        os << "\nNew Orientation: (" << close(transform.new_orientation.x) << ", " << close(transform.new_orientation.y) << ", " << close(transform.new_orientation.z) << ") ";
+        os << "\nScale: " << close(transform.scale) << " ";
+        os << "\nVelocity: (" << close(transform.velocity.x) << ", " << close(transform.velocity.y) << ", " << close(transform.velocity.z) << ") ";
+        os << "\nAcceleration: (" << close(transform.acceleration.x) << ", " << close(transform.acceleration.y) << ", " << close(transform.acceleration.z) << ") ";
+        os << "\nActive: " << (transform.active ? "true" : "false");
+
+        return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const EntityType& entity_type) {
+        switch(entity_type) {
+            case EntityType::NONE: 
+                os << "NONE";
+                break;
+            case EntityType::TERRAIN_BLOCK:
+                os << "TERRAIN_BLOCK";
+                break;
+            case EntityType::SAND_BLOCK:
+                os << "SAND_BLOCK";
+                break;
+            case EntityType::WATER_BLOCK:
+                os << "WATER_BLOCK";
+                break;
+            case EntityType::PLANT1:
+                os << "PLANT1";
+                break;
+            case EntityType::PLANT2:
+                os << "PLANT2";
+                break;
+            case EntityType::TERRESTRIAL1:
+                os << "TERRESTRIAL1";
+                break;
+            case EntityType::TERRESTRIAL2:
+                os << "TERRESTRIAL2";
+                break;
+        }
+        return os;
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Entity& e) {
+        os 
+            << "\nPosition " << e.transform.position
+            //<< "\nLast_position " << e.transform.last_position
+            //<< "\nNew_position " << e.transform.new_position
+            << "\nWorld Position "     << e.world_position
+            << "\nNew World Position " << e.world_new_position
+        ;
+        return os;
+    }
+
+
+
     Volume Volume::make(i32 xdim, i32 ydim, i32 zdim) {
         Volume volume;
         volume.xdim = xdim;
@@ -19,25 +102,71 @@ namespace island {
         return volume;
     }
 
+    const EntityType& Volume::operator()(veci3 v) const {
+
+        assert( (v.x < xdim && v.y < ydim && v.z < zdim)
+            &&  (v.x >= 0   && v.y >= 0   && v.z >= 0));
+        return data[v.x + v.y*xdim + v.z*xdim*ydim];
+    }
+
     const EntityType& Volume::operator()(i32 x, i32 y, i32 z) const {
-        assert(x < xdim && y < ydim && z < zdim);
+
+        assert( (x < xdim && y < ydim && z < zdim)
+            &&  (x >= 0   && y >= 0   && z >= 0));
         return data[x + y*xdim + z*xdim*ydim];
     }
 
     EntityType& Volume::operator()(i32 x, i32 y, i32 z) {
-        assert(x < xdim && y < ydim && z < zdim);
+        assert( (x < xdim && y < ydim && z < zdim)
+            &&  (x >= 0   && y >= 0   && z >= 0));
         return data[x + y*xdim + z*xdim*ydim];
     }
 
     bool Volume::on_bounds(i32 x, i32 y, i32 z) const {
         return (
-                (x < xdim && y < ydim && z < zdim)
-            &&  (x >= 0   && y >= 0   && z >= 0)
+                x <  xdim && y <  ydim && z <  zdim
+            &&  x >= 0    && y >= 0    && z >= 0
         );
     }
 
-    void Volume::destroy(Volume* self ){
+    bool Volume::on_bounds(veci3 v) const {
+        return  on_bounds(v.x,v.y,v.z);    
+    }
+
+    veci3 Volume::dim() {
+        return veci3(xdim,ydim, zdim);
+    }
+
+    void Volume::destroy(Volume *self) {
         delete[] self->data;
+    }
+
+    void Volume::dump(Volume* self ){
+        std::ofstream file("volume_dump.txt");
+        for (int z = 0; z < self->zdim; z++) {
+            for (int y = 0; y < self->ydim; y++) {
+                for (int x = 0; x < self->xdim; x++) {
+                    int index = x + y * self->xdim + z * self->xdim * self->ydim;
+                    const auto value = self->data[index];
+                    vec3 position = vec3(x, y, z);
+                    file << position << " : " << u32(value) << "\n";
+                }
+            }
+        }
+
+        file.close();
+    }
+
+   Volume Volume::copy(const Volume* other) {
+        Volume volume;
+        volume.xdim = other->xdim;
+        volume.ydim = other->ydim;
+        volume.zdim = other->zdim;
+        volume.data = new EntityType[other->xdim * other->ydim * other->zdim];
+        for (size_t i = 0; i < other->xdim * other->ydim * other->zdim; i++) {
+            volume.data[i] = other->data[i];
+        }
+        return volume;
     }
 
 
@@ -150,14 +279,27 @@ namespace island {
 
 
 
-    World& World::generate_volume() {
+    void World::generate_volume() {
         this->volume = Volume::make(dimensions.x, dimensions.y, dimensions.z);
+        assert(island_percent+lake_percent == 100); 
+        this->water_level = std::floor(((f32)(lake_percent)/(island_percent+lake_percent))* volume.ydim);
+        std::cout << "Water level : " << water_level << '\n';
 
-        this->water_level = (f32(lake_percent)/(island_percent+lake_percent))* volume.ydim;
+        // We need to make sure we know and reserve the max ammount of entities
+        // because we take a pointer to this volume which means that this vector
+        // should not EVER be resized, otherwise, you'll invalidate all
+        // movable entities pointers;
+        entities.reserve(volume.zdim *volume.ydim*volume.zdim);
 
-        for (int x = 0; x < volume.xdim; x++) {
-            for (int z = 0; z < volume.zdim; z++) {
+        for (int x = 0; x < (int)volume.xdim; x++) {
+            for (int z = 0; z < (int)volume.zdim; z++) {
+                #if defined(ISLAND_FLAT_TERRAIN) && ISLAND_FLAT_TERRAIN != 0
+                int height = water_level + 1;
+                #else
                 int height = std::round(simplex2(z,x, 8, 750.f, 0.593f)*volume.ydim);
+                #endif
+                height  = clamp(height,0,(int)volume.zdim);
+
                 //int height = water_level;
                 height_map[{x,z}] = height;
                 // The free list is places bove water level that are
@@ -174,11 +316,12 @@ namespace island {
             }
         }
 
+
         int suffocated_count = 0;
         int not_suffocated_count = 0; 
         int total_count = 0;
-        for (int x = 0; x < volume.xdim; x++) {
-            for (int z = 0; z < volume.zdim; z++) {
+        for (int x = 0; x < (int)volume.xdim; x++) {
+            for (int z = 0; z < (int)volume.zdim; z++) {
                 int height = height_map[{x,z}];
                 for (int y = height - 1; y >= 0; y--) {
                     EntityType type = volume(x,y,z);
@@ -199,7 +342,6 @@ namespace island {
                         veci3{x-1,y,z},
                     }) {
 
-                        const vec3& other = neighbour;
                         if (!volume.on_bounds(neighbour.x, neighbour.y, neighbour.z)){
                             suffocated_count ++;
                             is_suffocated = false;
@@ -222,9 +364,12 @@ namespace island {
                     //
                     Entity e = Entity::make(type);
                     e.world_position = veci3(x,y,z);
+                    e.world_new_position = veci3(e.world_position);
                     e.transform.position = vec3(f32(x),f32(y),f32(z)) ;
+                    e.transform.last_orientation = vec3(e.transform.position);
+                    e.transform.new_position     = vec3(e.transform.position);
                     entities.push_back(e);
-                }
+                } 
             }
         }
 
@@ -233,109 +378,204 @@ namespace island {
                   << " not_suffocated  count "<< not_suffocated_count 
                   << " total  count "<< total_count ;
         
-          auto prepare_entites  = [&](u32 count, EntityType type, f32 scale, vec3 translation) {
-            for (size_t i = 0; i < count ; i++) {
-                if (free_list.empty()) {
-                    continue;
-                }
-                veci3 pos = random_from_free_list();
-                volume(pos.x,pos.y,pos.z)   = type;
-                Entity e = Entity::make(type);
-                e.world_position = pos;
-                e.transform.scale = scale;
-                e.transform.position  = vec3(pos.x, pos.y-0.5f, pos.z) + translation;
+        prepare_entities(terrestrial1_count, EntityType::TERRESTRIAL1, 2.5f, {0,0,0.22f});
+        prepare_entities(terrestrial2_count, EntityType::TERRESTRIAL2, 1.25f, {0,0,0});
+        prepare_entities(plant1_count, EntityType::PLANT1, 3.9f, {0,0,0.0f});
+        prepare_entities(plant2_count, EntityType::PLANT2, 1.9f, {0,0,0.0f});
 
-                e.transform.last_position =   e.transform.position;
-                e.transform.new_position  =   e.transform.position;
-
-                entities.push_back(e);
-                if (type == EntityType::TERRESTRIAL1 || type == EntityType::TERRESTRIAL2) {
-                    movable_entities.push_back(&(entities.back()));
-                }
-            }
-        };
-
-        prepare_entites(terrestrial1_count, EntityType::TERRESTRIAL1, 2.5f, {0,0,0.22f});
-        prepare_entites(terrestrial2_count, EntityType::TERRESTRIAL2, 1.15f, {0,0,0});
-        prepare_entites(plant1_count, EntityType::PLANT1, 1.9f, {0,0,0.0f});
-        prepare_entites(plant2_count, EntityType::PLANT2, 1.9f, {0,0,0.0f});
-
-        return *this;
+        
+        // wfree_list.clear();
+        return;
     }
 
-    void World::update_positions() {
-        f32 time_interval = 0.015;
-        
-        for (auto e : movable_entities) {
-            int x = e->world_position.x;
-            int y = e->world_position.y;
-            int z = e->world_position.z;
-            for (const auto& neighbour : {
-                    //veci3{x,y+1,z},// we ignore y direction for now
-                    //veci3{x,y-1,z},// we ignore y direction for now
-                    veci3{x,y,z+1},
-                    veci3{x,y,z-1},
 
-                    veci3{x+1,y,z},
-                    veci3{x-1,y,z},
-                })
-            {
-                if (!volume.on_bounds(neighbour.x, neighbour.y, neighbour.z)){
+
+    void World::prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation) {
+        for (size_t i = 0; i < count ; i++) {
+            if (free_list.empty()) {
+                continue;
+            }
+
+            veci3* pos = random_from_free_list();
+            assert(pos != nullptr  && "Position is null" );
+
+            volume(pos->x,pos->y,pos->z)   = type;
+            Entity e = Entity::make(type);
+            e.world_position = veci3(*pos);
+            e.world_new_position = veci3(*pos);
+            e.transform.scale = scale;
+            e.transform.position  =  vec3(pos->x, pos->y-0.5f, pos->z) + translation;
+            e.transform.last_position =   vec3(e.transform.position);
+            e.transform.new_position  =   vec3(e.transform.position);
+            entities.push_back(e);
+
+            // We assume entities won't be rezise so make sure of that @important
+            int index = entities.size() -1;
+            if (type == EntityType::TERRESTRIAL1 || type == EntityType::TERRESTRIAL2) {
+                
+                (&entities[index])->world_new_position.x = (entities[index]).world_position.x;
+                (&entities[index])->world_new_position.y = (entities[index]).world_position.y;
+                (&entities[index])->world_new_position.z = (entities[index]).world_position.z;
+                movable_entities.push_back(&entities[index]);
+            }
+        }
+    };
+
+    void World::update_positions() {
+        std::vector<std::tuple<veci3,EntityType>> updates; 
+        bool first_time = true;
+
+        for (auto e : movable_entities) {
+
+            assert(e->type != EntityType::NONE 
+                && e->type != EntityType::PLANT1
+                && e->type != EntityType::PLANT2
+                && e->type != EntityType::SAND_BLOCK
+            );
+    
+            // Out last position sohuld now be the current position
+            // Neighbours to decide the next possible position
+            std::vector<veci3> neighbours = {
+                veci3(1,0,0), veci3(-1,0,0),
+                veci3(0,0,-1), veci3(0,0,+1),
+                //veci3{x,y+1,z},
+                //veci3{x,y-1,z},
+            };
+            // Shuffle the next possible positions, but first add some probability of being
+            // more likely to continue the the same direction
+            //shuffle(neighbours);
+
+
+            e->world_position.x = e->world_new_position.x;
+            e->world_position.y = e->world_new_position.y;
+            e->world_position.z = e->world_new_position.z;
+            for (const auto& neighbour : neighbours) {
+
+                // Update the new world position for this entity
+                int x = e->world_position.x + neighbour.x;
+                int y = e->world_position.y + neighbour.y;
+                int z = e->world_position.z + neighbour.z;
+                
+                bool on_bounds = (
+                    x < dimensions.x && y <  dimensions.y && z <  dimensions.z
+                 &&  x >= 0    && y >= 0    && z >= 0
+                );
+                if (!on_bounds){
                     continue;
+                    std::cout << "volume.dim " << volume.dim();
+                    std::cout << "world.dim " << dimensions;
+                    std::cout  << e->transform << e->transform;
                 }
 
+                if (
+                    //!volume.on_bounds(e->transform.position) ||
+                    !volume.on_bounds(x,y,z)
+                    ||
+                    !volume.on_bounds(x,y-1,z)
+                ){
+                    continue;
+                }
+                #if 0 
+                {
+                    if (!volume.on_bounds(e->transform.position))
+                        std::cout << *e << std::cin.get();
+                    e->world_position = veci3(e->world_new_position);
+                    e->world_new_position  =  veci3(e->world_position + neighbour);
+
+                    e->transform.last_position = vec3(e->transform.position);
+                    // remember to add -0.5f to y
+                    
+                    e->transform.new_position  = vec3(e->transform.position + neighbour);
+
+                    break;
+                }
+                #endif
                 if ( 
                     //  Check if it is clear
-                    volume(neighbour.x, neighbour.y, neighbour.z) == EntityType::NONE
+                    volume(x,y,z) == EntityType::NONE
                     &&
                     //Check if below is ground
-                    volume(neighbour.x, neighbour.y-1, neighbour.z) == EntityType::SAND_BLOCK
+                    volume(x,y-1,z) == EntityType::SAND_BLOCK
                 ) {
-                    // Upodate the new world position for this entity
-                    e->world_new_position = veci3(neighbour.x, neighbour.y, neighbour.z);
+
+                    // Old Position is now free
+                    //volume(e->world_position) == EntityType::NONE;
+                    // We're finished a tick so we are in new world position
+                    // Mark as free
+                    if (first_time) {
+                        std::cout 
+                            << "before we got a matchin new world position"
+                            << *e  << "\n";
+                    }
+                    // Mark new ocupied place
+                    volume(e->world_position.x,e->world_position.y, e->world_position.z) = e->type;
+                    updates.push_back({
+                        veci3(e->world_position.x, e->world_position.y, e->world_position.z),
+                        EntityType::NONE 
+                    }); 
+
+                    e->world_new_position.x  =  e->world_position.x + neighbour.x;
+                    e->world_new_position.y  =  e->world_position.y + neighbour.y;
+                    e->world_new_position.z  =  e->world_position.z + neighbour.z;
+                    
+                    if (first_time) {
+                        std::cout 
+                            << "After "
+                            << *e  << "\n";
+                        first_time = false;
+                    }
+                    
+                    e->transform.last_position = e->transform.position;
+                    e->transform.new_position.x = (f32)e->transform.last_position.x + neighbour.x;
+                    e->transform.new_position.y = (f32)e->transform.last_position.y + neighbour.y;
+                    e->transform.new_position.z = (f32)e->transform.last_position.z + neighbour.z;
                     // We need to update the volume soon, might as well try now
                     volume(e->world_new_position.x, e->world_new_position.y, e->world_new_position.z) = e->type;
-                    // Mark as free
-                    volume(e->world_position.x, e->world_position.y, e->world_position.z) = EntityType::NONE;
-                    e->transform.new_position = vec3((f32)neighbour.x, (f32)neighbour.y, (f32)neighbour.z);
                     break;
                 }
             }
+        }  
+
+        for (const auto& update : updates) {
+            veci3 pos = std::get<0>(update);
+            EntityType type = std::get<1>(update);
+            volume(pos.x, pos.y, pos.z) = type;
         }
     }
 
     void World::tick_positions(f32 dt) {
         persistent_data f32 timer = 0;
-        persistent_data f32 time_to_interpolate = 1.0;
-
+        persistent_data constexpr f32 time_to_interpolate = 2.1;
         timer += dt;
+
         f32 t = std::min(timer / time_to_interpolate, 1.0f);
+        //f32 t = ease_in_out(timer / time_to_interpolate, 1.0f);
+        //f32 t = ease_in_out(std::min(timer / time_to_interpolate, 1.0f), 2.0f);
 
         for(auto& e : movable_entities) {
-            e->transform.position.z += dt;
-            //e->transform.position = e->transform.last_position + (e->transform.new_position - e->transform.last_position) * t;
+            //e->transform.position = e->transform.new_position;
+            //e->transform.position = lerp(e->transform.last_position, e->transform.new_position, t);
+            e->transform.position = (vec3(e->transform.last_position)* (1.0f - t)) + (vec3(e->transform.new_position)* t);
+            //e->transform.position = (vec3(e->world_position)* (1.0f - t)) + (vec3(e->world_new_position)* t);
+            //e->transform.position.y -= 0.5f; 
         }
 
         if (timer >= time_to_interpolate) {
-            //std::cout << "timer " << timer;
             timer = 0;
-            for(auto& e : movable_entities) {
-
-                //std::cout << "e.type" << u31(e->type);
-                e->transform.last_position = e->transform.new_position;
-                update_positions();
-            }
+            //std::cin.get();
+            update_positions();
         }
     }
-    veci3 World::random_from_free_list() {
-        assert(! free_list.empty()); 
+    veci3* World::random_from_free_list() {
+        assert(!free_list.empty() && "what is empty bro"); 
+        if (free_list.empty()) {
+            return nullptr;
+        }
         int index = random_int(free_list.size()-1);
-        auto iter  = std::next(free_list.begin(), index);
+        auto&& iter  = std::next(free_list.begin(), index);
         //veci3 pos = free_list.back();// Cant use this becuase veci3 doenst implement certain operators
         veci3* pos = std::move(*iter);
-        veci3 v = veci3(pos->x,pos->y,pos->z);
         free_list.erase(iter);
-        delete pos;
-        return v;
+        return pos;
     }
 } // namespace cyx::island

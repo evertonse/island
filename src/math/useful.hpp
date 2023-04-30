@@ -1,6 +1,7 @@
 #pragma once
 #include "utils/common.h"
 #include <random>
+#include <algorithm>
 
 namespace cyx {
     template<typename T>
@@ -22,7 +23,7 @@ namespace cyx {
     }
 
     template <typename T>
-    T lerp(const T& a, const T& b, float t) {
+    T lerp(const T& a, const T& b, f32 t) {
         return a * (1.0f - t) + b * t;
     }
 
@@ -35,10 +36,35 @@ namespace cyx {
         return a * std::cos(theta) + relative * std::sin(theta);
     }
 
-    int random_int(int index) {
-    persistent_data std::mt19937 gen(std::random_device{}());
-    std::uniform_int_distribution<> dist(0, index);  // define the distribution
+    template <typename T>
+    T ease_in_out(T t, T p) {
+        return pow(t, p) / (pow(t, p) + pow(1 - t, p));
+    }
 
-    return dist(gen);  // generate and return a random number between 0 and index (inclusive)
-}
+    int random_int(int index) {
+        persistent_data std::mt19937 gen(std::random_device{}());
+        std::uniform_int_distribution<> dist(0, index);  // define the distribution
+
+        return dist(gen);  // generate and return a random number between 0 and index (inclusive)
+    }
+
+    template<typename T>
+    void shuffle(std::vector<T>& v){
+        std::mt19937 gen(std::random_device{}());
+        std::shuffle(v.begin(), v.end(), gen);
+    }
+
+    template <typename T>
+    std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
+        os << "[";
+        for (std::size_t i = 0; i < v.size(); ++i) {
+            os << v[i];
+            if (i != v.size() - 1) {
+                os << ", ";
+            }
+        }
+        os << "]";
+        return os;
+    }
+        
 }

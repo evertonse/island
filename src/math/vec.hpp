@@ -7,7 +7,7 @@
 #include <utility>
 #include "utils/common.h"
 #include "math/useful.hpp"
-//#define CYX_USE_REFERENCE_VEC
+#define CYX_USE_REFERENCE_VEC
 
 namespace cyx {
 
@@ -57,16 +57,22 @@ namespace cyx {
 		vec() {}
         vec& operator=(const vec& other) {
             if (this != &other) {
-                std::copy(other.numbers.begin(), other.numbers.end(), numbers.begin());
+                for (size_t i = 0; i < DIM; i++){
+                    (*this)[i] = other[i];
+                }
             }
             return *this;
         }
 
+        // TODO  add support for default init if size of args < DIM
         template<typename... Args>
         vec(Args... args) {
-            static_assert(sizeof...(args) <= DIM, "Too many arguments for vector dimension.");
+            static_assert(sizeof...(args) == DIM, " Args != from DIM");
             T temp[DIM] = { args... };
-            std::copy(temp, temp + sizeof...(args), numbers.begin());
+            for (size_t i = 0; i < DIM; i++) {
+                this->numbers[i] = temp[i];
+            }
+            
         }
 
         //template <typename AnotherType> 
@@ -78,7 +84,10 @@ namespace cyx {
             //return *this;
         //}
 
-        vec_concrete& operator=(vec_concrete&& other) noexcept {
+		vec(const vec<T, DIM>& other) : numbers(other.numbers) {};
+        vec(vec<T, DIM>&& other) : numbers(std::move(other.numbers)) {}
+
+        vec& operator=(vec&& other) noexcept {
             if (this != &other) {
                 numbers = std::move(other.numbers);
             }
@@ -94,14 +103,14 @@ namespace cyx {
 		}
         
         vec(T *vals) {
-           for(int i = 0; i < DIM; i++){
+           for(size_t i = 0; i < DIM; i++){
                 numbers[i] = vals[i];
            } 
         }
 
 
         vec(const T *vals) {
-           for(int i = 0; i < DIM; i++){
+           for(size_t  i = 0; i < DIM; i++){
                 numbers[i] = vals[i];
            } 
         }
@@ -109,7 +118,7 @@ namespace cyx {
         
         template <typename AnotherType> 
         vec(const vec<AnotherType, DIM>& other){
-            for(int i = 0; i < DIM; i++) {
+            for(size_t   i = 0; i < DIM; i++) {
                 numbers[i] = (T)other[i];
             } 
         }
@@ -123,8 +132,6 @@ namespace cyx {
         //vec& operator=(const vec& other) { if (this != &other) { numbers = other.numbers; } return *this; }
 		//vec operator=(const vec& v) = default;
 
-		vec(const vec<T, DIM>& other) : numbers(other.numbers) {};
-        vec(vec<T, DIM>&& other) : numbers(std::move(other.numbers)) {}
 
 
 		/*==== vec operations ====*/

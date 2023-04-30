@@ -11,6 +11,7 @@
 #include "math/useful.hpp"
 
 #define ISLAND_CUBE_VOLUME 2.0
+#define ISLAND_FLAT_TERRAIN true 
 
 
 using namespace cyx;
@@ -34,32 +35,39 @@ namespace island {
         u32 xdim, ydim, zdim;
 
         static Volume make(i32 xdim, i32 ydim, i32 zdim);
+        static Volume copy(const Volume *other);
 
+        const EntityType &operator()(veci3 v) const;
         const EntityType& operator()(i32 x, i32 y, i32 z) const;
 
         EntityType& operator()(i32 x, i32 y, i32 z) ;
 
         bool on_bounds(i32 x, i32 y, i32 z) const;
 
-        static void destroy(Volume* self );
+        bool on_bounds(veci3 v) const;
+
+        veci3 dim();
+        static void destroy(Volume *self);
+        static void dump(Volume *self);
     };
 
 
     struct Transform {
-        vec3 position{0.0f};
-        vec3 orientation{0.0f};
+        vec3 position{0};
+        vec3 new_position{0};
+        vec3 last_position{0};
 
-        vec3 last_position{0.0f};
-        vec3 last_rotation{0.0f};
 
-        vec3 new_position{0.0f};
-        vec3 new_rotation{0.0f};
+        vec3 orientation{0};
+        vec3 new_orientation{0};
+        vec3 last_orientation{0};
 
         f32  scale = 1.0f; 
         vec3 velocity{0.0};
         vec3 acceleration{0.0};
 
         bool active = false;
+        static Transform difference(const Transform& t1, const Transform& t2);
     };
 
 
@@ -84,14 +92,14 @@ namespace island {
         HeightMap height_map;
         std::list<veci3*> free_list;        
 
-        veci3 dimensions{100, 20, 80};
+        veci3 dimensions{100, 20, 20};
         u32 island_percent{70}; 
         u32 lake_percent{30}; 
         
-        u32 terrestrial1_count = 30;
-        u32 terrestrial2_count = 50;
+        u32 terrestrial1_count = 50;
+        u32 terrestrial2_count = 4;
 
-        u32 plant1_count = 156;
+        u32 plant1_count = 16;
         u32 plant2_count = 10;
 
         u32 water_level = 0;
@@ -101,9 +109,10 @@ namespace island {
         std::vector<Entity*> movable_entities;
         std::vector<Entity> entities;
 
-        World& generate_volume();
-        void update_positions();
+        void  generate_volume();
         void tick_positions(f32 dt);
-        veci3 random_from_free_list();
+        void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
+        void update_positions();
+        veci3* random_from_free_list();
     };
 } // namespace cyx::island

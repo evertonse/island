@@ -4,10 +4,10 @@ version   = "c++20"
 
 #-O
 #optimize = "off"
-optimize = "on"
+optimize = "off"
 
 #debug = "on"
-debug = "off"
+debug = "on"
 
 binpath = "bin/"
 
@@ -46,4 +46,5 @@ libfiles = [
 
 # -W
 warnings = [
+    'all'
 ]

@@ -247,7 +247,7 @@ namespace cyx {
         //Temporaries
         std::vector<f32> vert_palette;
         std::vector<f32> uv_palette;
-        bool is3DTex = false;
+        bool is3Dtexture = false;
 
         //Read the file
         std::string line;
@@ -271,7 +271,7 @@ namespace cyx {
                 uv_palette.push_back(v);
                 if (!ss.fail()) {
                     uv_palette.push_back(w);
-                    is3DTex = true;
+                    is3Dtexture = true;
                 }
             }
 
@@ -319,7 +319,7 @@ namespace cyx {
                 {
                     assert(num_slashes == 0);
                     const u32 v_ix = (u32)vert_palette.size() / 3;
-                    const u32 t_ix = (u32)uv_palette.size() / (is3DTex ? 3 : 2);
+                    const u32 t_ix = (u32)uv_palette.size() / (is3Dtexture ? 3 : 2);
                     if (wild2) 
                     {
                         a = v_ix - 3; b = v_ix - 2; c = v_ix - 1; d = v_ix - 0;
@@ -380,15 +380,15 @@ namespace cyx {
                 }
 
                 //Add face to list
-                if (is3DTex) {
+                if (is3Dtexture) {
                     std::cout << "Texture from " << filepath 
                             << " is 3D, You have no Support right now to hanlde that\n"
                             << std::cin.get();
                 }
-                add_face(vert_palette, uv_palette, a, at, b, bt, c, ct, is3DTex);
+                add_face(vert_palette, uv_palette, a, at, b, bt, c, ct, is3Dtexture);
                 if (is_quad)
                 {
-                    add_face(vert_palette, uv_palette, c, ct, d, dt, a, at, is3DTex);
+                    add_face(vert_palette, uv_palette, c, ct, d, dt, a, at, is3Dtexture);
                 }
             }
         }
@@ -548,7 +548,7 @@ namespace cyx {
 
 
     void TripleBufferMesh::add_face(const std::vector<f32>& vert_palette, const std::vector<f32>& uv_palette,
-        u32 a, u32 at, u32 b, u32 bt, u32 c, u32 ct, bool is3DTex)
+        u32 a, u32 at, u32 b, u32 bt, u32 c, u32 ct, bool is3Dtexture)
     {
         //Merge texture and vertex indicies
         assert(a > 0 && b > 0 && c > 0);
@@ -576,7 +576,7 @@ namespace cyx {
             verts.push_back(vert_palette[v * 3 + 2]);
             if (!uv_palette.empty()) 
             {
-                if (is3DTex) 
+                if (is3Dtexture) 
                 {
                     assert(vt < uv_palette.size() / 3);
                     uvs.push_back(uv_palette[vt * 3]);

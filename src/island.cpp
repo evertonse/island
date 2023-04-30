@@ -30,7 +30,7 @@ void on_scroll(f32 dir);
 const unsigned int WIDTH = 800; 
 const unsigned int HEIGHT = 600;
 
-AccelCamera cam = AccelCamera(vec3(20.0f, 10.0f, 3.0f));
+AccelCamera cam = AccelCamera(vec3(0.0f, 20.0f, 3.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
 
 f64 delta_time = 0.0f;
 VertexBuffer* VBO;
@@ -171,6 +171,7 @@ auto on_create(Window& win) {
     shader.compile();
     light.bind();
     light.compile();
+
     world.generate_volume();
     skybox.init();
 }
@@ -236,15 +237,23 @@ void on_update(Window& win, f64 dt) {
     //goblin.draw();
 
     for(auto& e : world.entities) {
+        if( 
+             (e.transform.position.x > world.dimensions.x)
+            || (e.transform.position.y > world.dimensions.y)
+            || (e.transform.position.z > world.dimensions.z)
+        ){
+            std::cout << e << std::cin.get();
+        }
         mat4 model = mat4::identity();
         model = mat4::scale(model, e.transform.scale);
         // The width of a block is 2 so we need to translate by 2
         // but since it has some z-value fightin we spread them apart
         // by a small factor of 000.1
-        model = mat4::translate(model, e.transform.position*2.001);
+        model = mat4::translate(model, vec3(e.transform.position)*2.001);
         light.uniform_mat4("model", model.data(),true);
         e.model->draw();
     }
+
     int i = 0;
     for (auto& e : entities) {
         mat4 model = mat4::identity();

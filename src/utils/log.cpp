@@ -34,5 +34,5 @@ Timer::~Timer(){
 	_end = std::chrono::system_clock::to_time_t( 
         std::chrono::system_clock::now()
     );
-	std::cout << _end - _start; 
+	std::cout << "[Timer]: " << _end - _start; 
 }

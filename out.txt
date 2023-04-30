@@ -1,0 +1,14 @@
+i:0
+attrVout:3
+VertexAttr:GL_FLOAT
+attr.normlized?:GL_FALSE
+layout.stride():20
+(const void*) :0
+
+i:1
+attrVout:2
+VertexAttr:GL_FLOAT
+attr.normlized?:GL_FALSE
+layout.stride():20
+(const void*) :12
+
