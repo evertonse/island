@@ -8,6 +8,8 @@
 #include <regex>
 
 namespace cyx {
+    // Not being used at the moment @incomplete
+    // @todo make shadows :)
     struct ShadowMap {
         u32 
             width = 2048,

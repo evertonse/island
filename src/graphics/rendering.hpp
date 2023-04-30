@@ -12,7 +12,7 @@
     #define glLogCall(x) x
     #define glCheckCall(x) x
 #endif 
-
+// This class is not being used
 namespace cyx {
 	class VertexArray; 
 	class VertexIndex;

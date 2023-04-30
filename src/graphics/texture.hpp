@@ -30,6 +30,8 @@ namespace cyx {
 		mutable u32 _slot = -1;
 	};
 
+ // I'm actually using this one, because it simplifies alot, 
+ // it alway binds to the same slot, which means I can use the same shader basically everytime
     struct SimpleTexture {
         u32 id;
         void load(const char* filepath);

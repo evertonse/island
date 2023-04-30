@@ -10,6 +10,7 @@
 
 namespace cyx {
 
+// Inheritance base vector, too much problems dont use this
 	template <class T, u32 DIM>
 	class vec {
 	

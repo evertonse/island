@@ -15,10 +15,11 @@
 
 namespace cyx {
 
+// Platform implementation of iterface Window
 class GlutWindow  : public Window {
 
 	public:
-        GlutWindow(Application* app, const char* title="default", int width=600, int height=600);
+        GlutWindow(Application* app, const char* title="Glut Window", int width=600, int height=400);
 		~GlutWindow();
 
         auto start() -> void override; 

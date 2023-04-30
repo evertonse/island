@@ -116,11 +116,11 @@ namespace island {
         std::vector<Entity*> movable_entities;
         std::vector<Entity> entities;
         std::vector<Entity> water_entities;
-        bool inline is_movable(const Entity&);
+        bool force_inline is_movable(const Entity&);
 
         void generate_volume();
         void generate_water();
-        void tick_positions(f32 dt);
+        void force_inline tick_positions(f32 dt);
         void from_file(const std::string& filename);
 
     private:

@@ -8,6 +8,7 @@
 #include "graphics/texture.hpp"
 #include "assets/all_obj.h"
 
+// null buffer for opengl buffer are 0
 #define nullbuffer 0;
 
 namespace cyx {
@@ -77,6 +78,7 @@ namespace cyx {
             const f32 scale = 1.0f
         );
 
+        // Create meshes from static data
         static void goblin(TripleBufferMesh*self);
         static void tiger(TripleBufferMesh * self);
         static void horse(TripleBufferMesh*self);

@@ -15,18 +15,24 @@ namespace cyx {
     /*
     Resource : https://www.khronos.org/opengl/wiki/Cubemap_Texture
 
-    This class is a skybox, a simple cube at the edge of every geometry
-    look the 'vertices' for example, all of them are 1.0f which is the 
+    This class is a skybox, a simple cube at the far edge the scene
+    If you look at the 'vertices' for example, all of them are 1.0f which is the 
     "edge" of the opengl clip space.
-    Then we're inside it, comera position is alway at the center of this cube
+
+    Then "we're inside" it, camera position is always at the center of this cube
     we make it that way.
+
     Also each face has a texture, so 6 2D texture at total, the texture have to be
-    very intricatelly aligned to create that feeling
+    very intricatelly aligned to create that feeling of continuity
+
     And the final thing is that instead of a uv, we sample the textures differently
-    we use a direction vetor from the camera position, so you can sample all six sides 
-    of the cube by knowing there the camera is pointing at.
-    If we follow the direction the camera is pointion we will know where intersects the cube
-    and if we know that we know which color we need to paint there; Thats pretty much it
+    we use a direction vector from the camera position, so you can sample all six sides 
+    of the cube by knowing where the camera is pointing at.
+
+    If we follow the direction the camera is position we will know where intersects the cube
+    and if we know that, then we know which color we need to paint in that specific location;
+
+    Thats pretty much it =P
     */
 struct Skybox {
 

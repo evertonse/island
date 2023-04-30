@@ -5,6 +5,7 @@
 
 namespace cyx {
 
+// Simple Class to encapsulate a Texture and a Mesh
 struct Model {
     TripleBufferMesh mesh;
     SimpleTexture texture;

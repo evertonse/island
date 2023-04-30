@@ -1,4 +1,7 @@
 #pragma once
+// This file gathers all  static data that
+// encapsulates the .obj from various models.
+
 #include "assets/horse_obj.h"
 #include "assets/wolf_obj.h"
 #include "assets/bamboo_obj.h"

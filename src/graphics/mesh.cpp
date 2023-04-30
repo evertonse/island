@@ -79,6 +79,7 @@ namespace cyx {
                 normals.push_back(vn);
                 has_normals = true;
             }
+            // Here we need to check against various formats
             else if (type == "f") {
                 Face face;
                 u32 v0=-1, t0=-1, n0=-1, v1=-1, t1=-1, n1=-1, v2=-1, t2=-1, n2=-1;
@@ -230,6 +231,7 @@ namespace cyx {
         glDeleteVertexArrays(1, &vao);
     }
 
+    // This function is a mix of my Triangular Mesh and some other adaptation
     void TripleBufferMesh::load(std::string filepath)
     {
         std::ifstream fin(filepath);
@@ -239,17 +241,17 @@ namespace cyx {
             vbo[0] = nullbuffer;
             vbo[1] = nullbuffer;
             vbo[2] = nullbuffer;
-            std::cout << filepath << " Could not be open !";
+            std::cout << filepath << " [Mesh]: could not open file "<< filepath ;
             assert(0 && " Could not load mesh  because file could not be open");
             return;
         }
 
-        //Temporaries
+        // Temporaries vars
+        //  we take a pallete to sample are vertices, uvs and textures
         std::vector<f32> vert_palette;
         std::vector<f32> uv_palette;
         bool is3Dtexture = false;
 
-        //Read the file
         std::string line;
         while (!fin.eof()) {
             std::getline(fin, line);

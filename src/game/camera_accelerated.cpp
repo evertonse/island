@@ -53,10 +53,12 @@ struct AccelCamera {
     }
 
     void update_vectors() {
+        // Calculate the direction based on yaw and pitch 
         vec3 dir;
         dir.x = -std::cos(radians(this->yaw)) * std::cos(radians(this->pitch));
         dir.y = -std::sin(radians(this->pitch));
         dir.z = -std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
+        //  create a orthonormal basis for the camera
         this->direction = dir.normalize();
         this->right = vec3::cross(this->direction, this->world_up).normalize();  
         this->up = vec3::cross(this->right, this->direction).normalize();

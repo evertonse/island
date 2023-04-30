@@ -9,6 +9,7 @@ namespace cyx {
         NONE,ARROW
     };
 
+    // Window Interface for various platform windows implementation
     struct Window {
 	
         virtual auto start() -> void = 0;

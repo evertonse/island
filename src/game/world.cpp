@@ -319,7 +319,13 @@ namespace island {
                 int height = water_level + 1;
                 #else
                 int height = std::round(
-                        simplex2(z,x, ISLAND_TERRAIN_OCTAVES , ISLAND_TERRAIN_PERSISTENCE , 0.609f)*volume.ydim);
+                        simplex2(
+                            z,x, 
+                            ISLAND_TERRAIN_OCTAVES , 
+                            ISLAND_TERRAIN_PERSISTENCE , 
+                            ISLAND_TERRAIN_LACUNARITY
+                        ) *volume.ydim
+                    );
                 #endif
                 height  = clamp(height,0,(int)volume.zdim);
 
@@ -683,8 +689,7 @@ namespace island {
 }
 
     void World::tendency(const Entity & e, std::vector<veci3>& neighbours) {
-        persistent_data int tendency = 8;
-        for (int i = 0; i < tendency; i++) {
+        for (int i = 0; i < ISLAND_MOVABLE_TENDENCY; i++) {
             neighbours.push_back(e.transform.orientation);
             for(auto& n : neighbours) {
                 if (n != (-e.transform.orientation)) {
