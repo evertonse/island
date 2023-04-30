@@ -63,6 +63,10 @@ namespace island {
         vec3 new_orientation{0};
         vec3 last_orientation{0};
 
+        f32 angle{0};
+        f32 new_angle{0};
+        f32 last_angle {0};
+
         f32  scale = 1.0f; 
         vec3 velocity{0.0};
         vec3 acceleration{0.0};
@@ -93,12 +97,12 @@ namespace island {
         HeightMap height_map;
         std::list<veci3*> free_list;        
 
-        veci3 dimensions{100, 20, 20};
-        u32 island_percent{70}; 
-        u32 lake_percent{30}; 
+        veci3 dimensions{100, 30, 60};
+        u32 island_percent{50}; 
+        u32 lake_percent{50}; 
         
         u32 terrestrial1_count = 50;
-        u32 terrestrial2_count = 4;
+        u32 terrestrial2_count = 50;
 
         u32 plant1_count = 16;
         u32 plant2_count = 10;
@@ -117,5 +121,7 @@ namespace island {
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
         void update_positions();
         veci3* random_from_free_list();
+        static f32 neighbour2angle(const veci3& n);
+
     };
 } // namespace cyx::island

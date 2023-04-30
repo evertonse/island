@@ -315,7 +315,7 @@ namespace island {
                 #if defined(ISLAND_FLAT_TERRAIN) && ISLAND_FLAT_TERRAIN != 0
                 int height = water_level + 1;
                 #else
-                int height = std::round(simplex2(z,x, 8, 750.f, 0.593f)*volume.ydim);
+                int height = std::round(simplex2(z,x, 9, 25000.0f, 0.609f)*volume.ydim);
                 #endif
                 height  = clamp(height,0,(int)volume.zdim);
 
@@ -399,8 +399,8 @@ namespace island {
         
         prepare_entities(terrestrial1_count, EntityType::TERRESTRIAL1, 2.5f, {0,0,0.22f});
         prepare_entities(terrestrial2_count, EntityType::TERRESTRIAL2, 1.25f, {0,0,0});
-        prepare_entities(plant1_count, EntityType::PLANT1, 3.9f, {0,0,0.0f});
-        prepare_entities(plant2_count, EntityType::PLANT2, 1.9f, {0,0,0.0f});
+        prepare_entities(plant1_count, EntityType::PLANT1, 4.8f, {0,0,0.0f});
+        prepare_entities(plant2_count, EntityType::PLANT2, 3.8f, {0,0,0.0f});
 
         
         // wfree_list.clear();
@@ -462,7 +462,11 @@ namespace island {
                 //veci3{x,y+1,z},
                 //veci3{x,y-1,z},
             };
-
+            int tendency = 6;
+            for (int i = 0; i < tendency; i++) {
+                neighbours.push_back(e->transform.orientation);
+            }
+             
             // Shuffle the next possible positions, but first add some probability of being
             // more likely to continue the the same direction
             shuffle(neighbours);
@@ -534,9 +538,12 @@ namespace island {
                     e->world_new_position.y  =  e->world_position.y + neighbour.y;
                     e->world_new_position.z  =  e->world_position.z + neighbour.z;
 
-                    
+
                     e->transform.last_orientation = e->transform.orientation; 
                     e->transform.new_orientation = vec3(neighbour);
+
+                    e->transform.last_angle = e->transform.angle; 
+                    e->transform.new_angle = neighbour2angle(neighbour);
                     
                     e->transform.last_position = e->transform.position;
                     e->transform.new_position.x = (f32)e->transform.last_position.x + neighbour.x;
@@ -561,26 +568,35 @@ namespace island {
         persistent_data constexpr f32 time_to_interpolate = 2.1;
         timer += dt;
 
-        f32 t = std::min(timer / time_to_interpolate, 1.0f);
+        //f32 t = std::min(timer / time_to_interpolate, 1.0f);
         //f32 t = ease_in_out(timer / time_to_interpolate, 1.0f);
-        //f32 t = ease_in_out(std::min(timer / time_to_interpolate, 1.0f), 2.0f);
+        f32 t = ease_in_out(std::min(timer / time_to_interpolate, 1.0f), 3.5f);
 
         for(auto& e : movable_entities) {
-            //e->transform.position = e->transform.new_position;
-            //e->transform.position = lerp(e->transform.last_position, e->transform.new_position, t);
             e->transform.position = (vec3(e->transform.last_position)* (1.0f - t)) + (vec3(e->transform.new_position)* t);
             e->transform.orientation = (vec3(e->transform.last_orientation)* (1.0f - t)) + (vec3(e->transform.new_orientation)* t);
-            //e->transform.position = (vec3(e->world_position)* (1.0f - t)) + (vec3(e->world_new_position)* t);
-            //e->transform.position.y -= 0.5f; 
+            e->transform.angle= e->transform.last_angle* (1.0f - t) + e->transform.new_angle * t;
         }
-
         if (timer >= time_to_interpolate) {
             timer = 0;
-            //std::cin.get();
             update_positions();
         }
     }
-    veci3* World::random_from_free_list() {
+
+    f32 World::neighbour2angle(const veci3& n) {
+        if (n.x == 1 )
+            return 90.0f; 
+        else if (n.x == -1)
+            return -90.0f; 
+        else if (n.z == 1)
+            return -0.0f;
+        else if (n.z == -1)
+            return 180.f;
+        assert(0 && "this function should not be used outside the context of this");
+    }
+
+    veci3 *World::random_from_free_list()
+    {
         assert(!free_list.empty() && "what is empty bro"); 
         if (free_list.empty()) {
             return nullptr;

@@ -30,7 +30,7 @@ void on_scroll(f32 dir);
 const unsigned int WIDTH = 800; 
 const unsigned int HEIGHT = 600;
 
-AccelCamera cam = AccelCamera(vec3(0.0f, 20.0f, 3.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
+AccelCamera cam = AccelCamera(vec3(10.0f, 40.0f, 10.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
 
 f64 delta_time = 0.0f;
 VertexBuffer* VBO;
@@ -249,17 +249,10 @@ void on_update(Window& win, f64 dt) {
     //goblin.draw();
 
     for(auto& e : world.entities) {
-        if( 
-             (e.transform.position.x > world.dimensions.x)
-            || (e.transform.position.y > world.dimensions.y)
-            || (e.transform.position.z > world.dimensions.z)
-        ){
-            std::cout << e << std::cin.get();
-        }
         mat4 model = mat4::identity();
 
         if(world.is_movable(e)) {
-            model = mat4::rotate(model, vec3::angle(e.transform.orientation,{1.0,0.0,0.0}), {0.0,1.0,0.0});
+           model = mat4::rotate(model, radians(e.transform.angle), {0.0, 1.0, 0.0});
         } 
 
         model = mat4::scale(model, e.transform.scale);
@@ -282,6 +275,7 @@ void on_update(Window& win, f64 dt) {
         water.uniform_mat4("model", model.data(),true);
         e.model->draw();
     }
+
 
     light.bind();
     int i = 0;
