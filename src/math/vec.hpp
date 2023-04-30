@@ -349,7 +349,7 @@ namespace cyx {
             return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         }
         static vec3 left(const vec3& rotation) {
-            float yaw = radians(rotation[1]);
+            float yaw = radians(rotation[1] + 90.0f);
             float x = std::cos(yaw);
             float y = 0;
             float z = std::sin(yaw);

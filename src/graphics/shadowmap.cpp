@@ -1,7 +1,7 @@
-#include "framebuffer.hpp"
+#include "graphics/shadowmap.hpp"
 
 void cyx::ShadowMap::init(const vec3& light_position) {
-   shader = Shader("assets/hadowmap.glsl"); 
+   shader = Shader("assets/shadowmap.glsl"); 
     // Framebuffer for Shadow Map
 	glGenFramebuffers(1, &fbo);
 
@@ -24,7 +24,6 @@ void cyx::ShadowMap::init(const vec3& light_position) {
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
 	// Matrices needed for the light's perspective
 	mat4 projection = mat4::ortho(-35.0f, 35.0f, -35.0f, 35.0f, 0.1f, 100.0f);

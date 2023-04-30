@@ -466,10 +466,8 @@ namespace island {
                 //veci3{x,y+1,z},
                 //veci3{x,y-1,z},
             };
-            int tendency = 8;
-            for (int i = 0; i < tendency; i++) {
-                neighbours.push_back(e->transform.orientation);
-            }
+
+            tendency(*e, neighbours);
              
             // Shuffle the next possible positions, but first add some probability of being
             // more likely to continue the the same direction
@@ -683,5 +681,18 @@ namespace island {
 
     input.close();
 }
+
+    void World::tendency(const Entity & e, std::vector<veci3>& neighbours) {
+        persistent_data int tendency = 8;
+        for (int i = 0; i < tendency; i++) {
+            neighbours.push_back(e.transform.orientation);
+            for(auto& n : neighbours) {
+                if (n != (-e.transform.orientation)) {
+                    neighbours.push_back(n);
+                }
+            }
+        }
+
+    }
 
 } // namespace cyx::island

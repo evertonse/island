@@ -27,6 +27,8 @@ namespace island {
 
    
 
+    // Class represents the Volume of the whole scene
+    // which is divided in block 1x1 
     struct Volume{
         EntityType empty = EntityType::NONE;
         EntityType* data;
@@ -50,6 +52,7 @@ namespace island {
     };
 
 
+    // Transformations about an entity
     struct Transform {
         vec3 position{0};
         vec3 new_position{0};
@@ -73,6 +76,7 @@ namespace island {
     };
 
 
+    // Info about and entity
     struct Entity {
         Transform  transform;
         veci3  world_position {0,0};
@@ -81,11 +85,12 @@ namespace island {
         Model* model;
         EntityType type;
         
-
         static Entity make(EntityType type);
         static void destroy(Entity *self);
     };
 
+
+    // World that is the scene and all it needs
     struct World {
         World(){};
         using Coord2D = std::tuple<int, int>;
@@ -119,6 +124,7 @@ namespace island {
         void from_file(const std::string& filename);
 
     private:
+        void tendency(const Entity& e, std::vector<veci3>& neighbours);
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
         void update_positions();
         veci3* random_from_free_list();

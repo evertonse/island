@@ -125,7 +125,8 @@ namespace cyx {
             }
             return result;
         }
-        // mat multiplication
+
+        // mat multiplicationa I like this operator
         vec4 operator%(const vec4& rhs) const {
             assert((ROWS == COLS) && COLS == 4);
             mat<f32,4,1> colmun_vec(rhs);
@@ -172,8 +173,6 @@ namespace cyx {
 
         static mat<f32,4,4> perspective2(
             f32 fov, f32 aspect_ratio, f32 near_plane, f32 far_plane){
-
-            // Calculate the projection matrix
             const float tan_half_fov = std::tan(fov / 2.0f);
             const float right = tan_half_fov * near_plane * aspect_ratio;
             const float left = -right;
@@ -202,13 +201,14 @@ namespace cyx {
 		T* end()   { return (&numbers[numbers.size()]); } //
 		T* data()  { return numbers.data(); }
 
+
         static mat4 frustum(
             f32 left, f32 right, f32 bottom,
             f32 top, f32 znear, f32 zfar)
         {
             assert(0 && "Make sure this function is row major");
             mat4 matrix;
-            float temp, temp2, temp3, temp4;
+            f32 temp, temp2, temp3, temp4;
             temp = 2.0 * znear;
             temp2 = right - left;
             temp3 = top - bottom;
@@ -251,24 +251,41 @@ namespace cyx {
             m(3,3) = 0.0f;
             return m;
         }
-        static mat4 lookat(const vec3& eye, const vec3& center, const vec3& up) {
-            vec3 f((center - eye).normalize());
-            vec3 s(vec3::cross(up, f).normalize());
-            vec3 u(vec3::cross(f, s));
 
+        // @input eye is just there the camera is
+        // @input center is where the camera is supposed to be look at
+        // @input up is the up vector to the camera, where is the "head"
+        // So this function emulate a translation to get to the camera position
+        // then a inverse rotation from to "align" the coordinate system of the
+        // camera with the coordinate system of the world which has origin 0,0 
+        // Taken from Pg.162=3 from the tiger book;
+        static mat4 lookat(const vec3& eye, const vec3& center, const vec3& up) {
+            // Caculate w is the normalized direction of the camera
+            // we calculate from center and eye
+            vec3 w((center - eye).normalize());
+            // Calculate the other axis 
+            vec3 u(vec3::cross(up, w).normalize());
+            // and The last one
+            vec3 v(vec3::cross(w, u));
+
+            // Atribute the values to the already inversed matrix
             mat4 m = mat4::identity();
-            m(0,0) = s.x;
-            m(0,1) = s.y;
-            m(0,2) = s.z;
-            m(1,0) = u.x;
-            m(1,1) = u.y;
-            m(1,2) = u.z;
-            m(2,0) = f.x;
-            m(2,1) = f.y;
-            m(2,2) = f.z;
-            m(0,3) = -vec3::dot(s, eye);
-            m(1,3) = -vec3::dot(u, eye);
-            m(2,3) = -vec3::dot(f, eye);
+            m(0,0) = u.x;
+            m(0,1) = u.y;
+            m(0,2) = u.z;
+
+            m(1,0) = v.x;
+            m(1,1) = v.y;
+            m(1,2) = v.z;
+            // Last line
+            m(2,0) = w.x;
+            m(2,1) = w.y;
+            m(2,2) = w.z;
+            // Translation portion is just the dot product betweenn the eye position
+            // and the camera coordinate axis vector
+            m(0,3) = -vec3::dot(u, eye);
+            m(1,3) = -vec3::dot(v, eye);
+            m(2,3) = -vec3::dot(w, eye);
             return m;
         }
 

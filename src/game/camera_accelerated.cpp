@@ -20,6 +20,7 @@ struct AccelCamera {
     vec3 acceleration{0,0};
     vec3 world_up{0,1.0f,0.0};
 
+    const f32 pitch_clamp = 89.0f;
     f32 yaw;
     f32 pitch;
     
@@ -27,7 +28,7 @@ struct AccelCamera {
     f32 fov;
 
     f32 mouse_sensitivity;
-
+    
     AccelCamera(vec3 position = vec3(0.0f, 0.0f, 0.0f), vec3 up = vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH)
         : direction(vec3(0.0f, 0.0f, -1.0f)), speed(SPEED), mouse_sensitivity(SENSITIVITY), fov(FOV)
     {   this->position = position;
@@ -62,38 +63,48 @@ struct AccelCamera {
     }
 
     void on_tick(f32 dt) {
+        // Simple formula for updating position
+        // velocity is increasing by the  current acceleration
+        // and acceleration goes to zero
+        // then we finally update the position based on delta time
         auto& position = this->position;
         auto& velocity = this->velocity;
 
-        velocity += acceleration;
+        velocity += acceleration * dt;
         acceleration = {0, 0, 0};
 
-        position += velocity * dt;
+        position += velocity;
 
+        // Simulate damping of velocity by "atrito" from the ground
         velocity *= 0.956f;
     }
 
     void on_key(Key key, f32 dt) {
+        // 
         float SPEED = 7.45f * speed * dt;
 
         persistent_data Key key_before = key;
         if (key == Key::SHIFT) {
             SPEED *= 15.0f * speed * dt;
         }
-        if (key == Key::A) {
-            acceleration.x += -std::cos(radians(yaw + 90)) * SPEED;
-            acceleration.z += -std::sin(radians(yaw + 90)) * SPEED;
-        }
-        else if (key == Key::D) {
-            acceleration.x += std::cos(radians(yaw + 90)) * SPEED;
-            acceleration.z += std::sin(radians(yaw + 90)) * SPEED;
+
+        // We use determine the left vetor for the correct yaw
+        // and we add 90 to the yaw to get the forward vector and we add to the
+        // acceleration, the same for the backwards vector
+        if (key == Key::W) {
+            acceleration += vec3::left(vec3(pitch,yaw + 90.0, 0.0)) * SPEED;
         }
         else if (key == Key::S) {
-            acceleration += vec3::left(vec3(pitch,yaw,0.0)) * SPEED;
+            acceleration += vec3::right(vec3(pitch, yaw + 90.0, 0.0)) * SPEED;
         }
-        else if (key == Key::W) {
+        // Here, we dont need to add the 90f because left is just left
+        else if (key == Key::A) {
+            acceleration += vec3::left(vec3(pitch,yaw, 0.0f)) * SPEED;
+        }
+        else if (key == Key::D) {
             acceleration += vec3::right(vec3(pitch,yaw,0.0)) * SPEED;
         }
+        // Here e only add the y which is up
         else if ((key == Key::E) || (key == Key::CTRL) || key == Key::SHIFT) {
             acceleration.y -= SPEED * 2;
         }
@@ -101,30 +112,28 @@ struct AccelCamera {
             acceleration.y += SPEED * 2.198;
         }    
         key_before = key; 
-        if (pitch < -80.0f) {
-            pitch = -79.9f;
-        }
-        else if (pitch > 85.0f) {
-            pitch = 84.9f;
-        }
     }
 
-    void on_mouse(f64 x, f64 y, bool locked = false) {
-        f64 xoffset = x * mouse_sensitivity;
-        f64 yoffset = y * mouse_sensitivity;
+    void on_mouse(f64 xoffset, f64 yoffset, bool locked = false) {
+        // This funciton take in an offset from the
+        // last x and y compared to the current one
+        xoffset *= mouse_sensitivity;
+        yoffset *= mouse_sensitivity;
+        // we don't use this lock logic anymore
         if (locked) {
             this->yaw  = xoffset;
             this->pitch = yoffset;
         }
+        // If the mouse went up, our pitch goes up
+        // if the mouse wen sideways the yaw acts accordinly
         else {
             this->yaw += xoffset;
             this->pitch += yoffset;
         }
-        
-        if (this->pitch > 89.0f)
-            this->pitch = 89.0f;
-        if (this->pitch < -89.0f)
-            this->pitch = -89.0f;
+        // Clamp to avoid flipping of the camera.
+        // simply wont let the pitch go too up
+        // nor too much down
+        this->pitch = clamp(pitch, -pitch_clamp ,pitch_clamp );
         update_vectors();
     }
 };
