@@ -9,10 +9,7 @@
 #include "math/vec.hpp"
 #include "utils/common.h"
 #include "math/useful.hpp"
-
-#define ISLAND_CUBE_VOLUME 2.0
-#define ISLAND_FLAT_TERRAIN false 
-
+#include "defaults.h"
 
 
 using namespace cyx;
@@ -115,13 +112,18 @@ namespace island {
         std::vector<Entity> entities;
         std::vector<Entity> water_entities;
         bool inline is_movable(const Entity&);
-        void  generate_volume();
-        void  generate_water();
+
+        void generate_volume();
+        void generate_water();
         void tick_positions(f32 dt);
+        void from_file(const std::string& filename);
+
+    private:
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
         void update_positions();
         veci3* random_from_free_list();
         static f32 neighbour2angle(const veci3& n);
+
 
     };
 } // namespace cyx::island

@@ -297,11 +297,14 @@ namespace island {
         return false;
     }
 
-    void World::generate_volume()
-    {
+    void World::generate_volume() {
         this->volume = Volume::make(dimensions.x, dimensions.y, dimensions.z);
-        assert(island_percent+lake_percent == 100); 
-        this->water_level = std::floor(((f32)(lake_percent)/(island_percent+lake_percent))* volume.ydim);
+        //assert(island_percent+lake_percent == 100); 
+
+        f32 water_percent = ((f32)(lake_percent)/(island_percent+lake_percent));
+        // Make it mor likely to have higer level water to compensate for the fact 
+        // of the way water percent is implementend
+        this->water_level = std::floor( sigmoid(water_percent,-ISLAND_WATER_TENDENCY)* volume.ydim);
         std::cout << "Water level : " << water_level << '\n';
 
         // We need to make sure we know and reserve the max ammount of entities
@@ -315,7 +318,8 @@ namespace island {
                 #if defined(ISLAND_FLAT_TERRAIN) && ISLAND_FLAT_TERRAIN != 0
                 int height = water_level + 1;
                 #else
-                int height = std::round(simplex2(z,x, 9, 25000.0f, 0.609f)*volume.ydim);
+                int height = std::round(
+                        simplex2(z,x, ISLAND_TERRAIN_OCTAVES , ISLAND_TERRAIN_PERSISTENCE , 0.609f)*volume.ydim);
                 #endif
                 height  = clamp(height,0,(int)volume.zdim);
 
@@ -462,7 +466,7 @@ namespace island {
                 //veci3{x,y+1,z},
                 //veci3{x,y-1,z},
             };
-            int tendency = 6;
+            int tendency = 8;
             for (int i = 0; i < tendency; i++) {
                 neighbours.push_back(e->transform.orientation);
             }
@@ -583,6 +587,8 @@ namespace island {
         }
     }
 
+
+
     f32 World::neighbour2angle(const veci3& n) {
         if (n.x == 1 )
             return 90.0f; 
@@ -638,4 +644,44 @@ namespace island {
             }
         }
     }
+
+    void World::from_file(const std::string& filename) {
+        std::ifstream input(filename);
+        if (!input.is_open()) {
+            std::cerr << "Could not open file: " << filename << std::endl;
+            return;
+        }
+
+        std::string label;
+        while (input >> label) {
+            if (label == "cena") {
+                input >> dimensions.x >> dimensions.y >> dimensions.z;
+            }
+            else if (label == "ilha") {
+                input >> island_percent;
+            }
+            else if (label == "lagos") {
+                input >> lake_percent;
+            }
+            else if (label == "terrestres_1") {
+                input >> terrestrial1_count;
+            }
+            else if (label == "terrestres_2") {
+                input >> terrestrial2_count;
+            }
+            else if (label == "plantas_1") {
+                input >> plant1_count;
+            }
+            else if (label == "plantas_2") {
+                input >> plant2_count;
+            }
+            else {
+                std::cout << "Não reconheço esse Label, espera-se [cena, ilha, lagos, terrestres1 ou 2, plantas1 ou 2]" << label << std::endl;
+                exit(1);
+            }
+        }
+
+    input.close();
+}
+
 } // namespace cyx::island

@@ -66,5 +66,10 @@ namespace cyx {
         os << "]";
         return os;
     }
+
+    f32 sigmoid(f32 x, f32 t = 0.0f, f32 k = 1.0f) {
+        return 1.0f / (1.0f + std::exp(k * x + t));
+    }
+
         
 }

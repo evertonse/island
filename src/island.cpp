@@ -11,13 +11,10 @@ using namespace cyx;
 using namespace island;
 
 struct Flags {
-    bool mouse_lock = false; // doesnt work for now
+    bool mouse_lock = false; 
     bool mouse_is_down = false;
 } flag;
 
-
-using std::cout;
-using std::endl;
 
 
 void init_gl();
@@ -60,7 +57,10 @@ TripleBufferMesh tiger;
 TripleBufferMesh cube;
 Skybox skybox;
 Model goblin;
+
 World& world = *(new World());
+
+const char* world_file = "src/input.txt";
 //TriangularMesh tri_mesh;
 
 // Vertices dos triângulos
@@ -178,9 +178,10 @@ auto on_create(Window& win) {
     water.bind();
     water.compile();
 
+    world.from_file(world_file);
     world.generate_volume();
     world.generate_water();
-    skybox.init();
+    skybox.init(ISLAND_SKYBOX,".png");
 }
 
 
@@ -436,10 +437,17 @@ void update_title(Window& win, f32 dt) {
     win.set_title(title.c_str());
 }
 
-int main() {
+int main(int argc, const char* argv[]) {
     Application app;
-    
-    app.on_init = [](Window&){std::cout << "glut init\n";};
+
+    if (argc > 1) {
+        world_file = argv[1];
+        std::cout << "[main]: Started from input file:  " << world_file << " that description will be used to create the scene \n" ;
+    }
+    else {
+        std::cout << "[main]: Started with no input file. The default input file:" << world_file <<" will be used" <<'\n';
+    } 
+    app.on_init = [](Window&){std::cout << "[Window]: glut init\n";};
     app.on_create = on_create;
     app.on_update = on_update;
     app.on_event  = on_event;

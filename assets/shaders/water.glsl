@@ -76,10 +76,12 @@ void debug() {
 void main() {
 
 	// ambient lighting
-	float ambient = 0.38;
+	float ambient = 0.62;
 
     // facotor for the water
-    float factor = (0.2*sin(time)+1.0)/2.0;
+    float dim_factor = 0.15;
+    //float factor = (0.2*sin(time)+1.0)/2.0;
+    float factor = (dim_factor*(cos(time)+sin(2*time))+1.76)/(2.0*1.76);
 
 	vec3  normal = normalize(normal);
 	vec3  light_direction = factor*normalize(light_position - curr_pos);
@@ -92,13 +94,13 @@ void main() {
     //return;
 
 	// specular lighting
-	float specular_light = 0.687;
+	float specular_light = 0.8887;
 	vec3  view_direction = normalize(cam_position - curr_pos);
 	vec3  reflection_direction = reflect(-light_direction, normal);
-	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.0), 12);
+	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.0), 32);
 	float specular = spec_amount * specular_light;
 
     // open gl color
 	FragColor = texture(tex0, tex_coord*(factor/2.0)) * light_color * (diffuse + ambient + specular);
-    FragColor.w = 0.75;
+    FragColor.w = 0.756;
 }
