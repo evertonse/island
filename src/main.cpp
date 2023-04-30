@@ -3,7 +3,7 @@
 this_file="src/main.cpp"
 this_exec="bin/app"
 
-exec_line="g++ $this_file -o $this_exec  -ldl -lglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/"
+exec_line="g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast -Wno-write-strings -fomit-frame-pointer -flto"
 echo "exec: $exec_line"
 
 eval $exec_line
@@ -16,12 +16,8 @@ else
     exit 1
 fi
 #endif
-//#include "pointer_app.cpp"
-//#include "project.cpp"
-//#include "refactor.cpp"
-//#include "simple.cpp"
-//#include "fixed_pipeline.cpp"
-//#include "learn-opengl.cpp"
-#include "island.cpp"
 
-// Compile: bash src/main.cpp 
+// You can call this file as a bash file to compile the project
+// bash src/main.cpp from the root of this project
+// The start and main function of the project is on "island.cppc"
+#include "island.cpp"
