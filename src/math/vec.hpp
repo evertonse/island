@@ -7,7 +7,6 @@
 #include <utility>
 #include "utils/common.h"
 #include "math/useful.hpp"
-#define CYX_USE_REFERENCE_VEC
 
 namespace cyx {
 

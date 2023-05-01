@@ -592,12 +592,11 @@ namespace island {
     }
 
 
-
     f32 World::neighbour2angle(const veci3& n) {
         if (n.x == 1 )
-            return 90.0f; 
+            return 89.0f; 
         else if (n.x == -1)
-            return -90.0f; 
+            return -89.0f; 
         else if (n.z == 1)
             return -0.0f;
         else if (n.z == -1)
