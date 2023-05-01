@@ -34,7 +34,16 @@
 -  ``crtl+space, e`` to go down (couldn't resolve the crlt glut problem, so the use of crtl is finnicky) 
 - ``wheel`` to change fov
 
+# Recommended Settings
+- The recommended settings are in ``src/input.txt``
+- If width or depth exceeds ``100`` might get pretty LOW fps. It's recommended to stay below this
+range, and the height be less then ``50``
+- WARNING, this project doesnt handle memory very efficiently so more than ``50`` terrestrials might crash the program with no warning
+
 # Project Folder Structure
+
+![](assets/images/folder_structure.png)
+
 - ``src/`` contains all the source code, it containes ``main.cpp`` for a pseudo-bash script that includes the actual project ``island.cpp``, also can find the ``input.txt`` that provides a default scene description
 - ``src/game`` all the island code that dependes on all the other folder in the ``src``
 - ``src/utils`` utils function, doenst depend on any files 
@@ -45,3 +54,11 @@
 - ``vendor/`` All external libraries, glad, noise, utily for obj2c, stb image
 - ``bin/`` binaries
 - ``assets/`` resources for the project, including shaders, textures, models.
+- ``docs/`` definition of the project from my class
+
+
+# Showcase
+![](assets/images/sc4.png)
+![](assets/images/sc3.png)
+![](assets/images/sc2.png)
+![](assets/images/sc1.png)

@@ -327,7 +327,7 @@ namespace island {
                         ) *volume.ydim
                     );
                 #endif
-                height  = clamp(height,0,(int)volume.zdim);
+                height  = clamp(height,0,(int)volume.zdim-1);
 
                 //int height = water_level;
                 height_map[{x,z}] = height;
@@ -413,7 +413,7 @@ namespace island {
         prepare_entities(plant2_count, EntityType::PLANT2, 3.8f, {0,0,0.0f});
 
         
-        // wfree_list.clear();
+        free_list.clear();
         return;
     }
 

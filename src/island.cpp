@@ -460,7 +460,7 @@ int main(int argc, const char* argv[]) {
     app.on_update = on_update;
     app.on_event  = on_event;
     app.on_destroy = on_destroy;
-    Window* win   = new GlutWindow(&app);
+    Window* win   = new GlutWindow(&app, "Island", WIDTH, HEIGHT );
     win->set_width(WIDTH);
     win->set_height(HEIGHT);
     win->start();
