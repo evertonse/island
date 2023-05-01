@@ -1,7 +1,7 @@
-cena 70 30 70
+cena 50 15 50
 ilha 70
 lagos 30
 terrestres_1 18
 terrestres_2 18
-plantas_1 50
-plantas_2 50
+plantas_1 25
+plantas_2 25
