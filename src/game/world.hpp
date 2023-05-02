@@ -113,7 +113,7 @@ namespace island {
 
         Volume volume;
 
-        std::vector<Entity*> movable_entities;
+        std::vector<Entity> movable_entities;
         std::vector<Entity> entities;
         std::vector<Entity> water_entities;
         bool force_inline is_movable(const Entity&);
@@ -128,7 +128,7 @@ namespace island {
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
         void update_positions();
         veci3* random_from_free_list();
-        static f32 neighbour2angle(const veci3& n);
+        static f32 neighbour2angle(const vec3& n);
 
 
     };

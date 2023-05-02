@@ -248,9 +248,6 @@ void on_update(Window& win, f64 dt) {
     light.bind();
     for(auto& e : world.entities) {
         mat4 model = mat4::identity();
-        if(world.is_movable(e)) {
-           model = mat4::rotate(model, radians(e.transform.angle), {0.0, 1.0, 0.0});
-        } 
         model = mat4::scale(model, e.transform.scale);
         // The width of a block is 2 so we need to translate by 2
         // but since it has some z-value fightin we spread them apart
@@ -260,13 +257,10 @@ void on_update(Window& win, f64 dt) {
         e.model->draw();
     }
 
-    light.bind();
-    for(auto& e : world.entities) {
+    for(auto& e : world.movable_entities) {
         mat4 model = mat4::identity();
-        // If movable we need to rotate to the corrected orientation
-        if(world.is_movable(e)) {
-           model = mat4::rotate(model, radians(e.transform.angle), {0.0, 1.0, 0.0});
-        } 
+        // It is movable so we need to rotate to the corrected orientation
+        model = mat4::rotate(model, radians(e.transform.angle), {0.0, 1.0, 0.0});
         model = mat4::scale(model, e.transform.scale);
         // The width of a block is 2 so we need to translate by 2
         // but since it has some z-value fightin we spread them apart
@@ -434,7 +428,6 @@ void init_gl(){
 	glClearDepth(1.0);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
-	glShadeModel(GL_SMOOTH);
 }
 
 // Update title with fps

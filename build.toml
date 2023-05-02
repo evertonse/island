@@ -1,5 +1,5 @@
-name      = "App"
-compiler  = "gcc"
+name      = "app"
+compiler  = "g++"
 version   = "c++20"
 
 #-O
@@ -23,18 +23,19 @@ defines = [
 
 # -I
 includedirs = [
-  "src/", 
-  "demos/", 
-  "vendor/", 
-  "vendor/glad/include", 
-  "vendor/stb/include", 
-  "vendor/noise/", 
-  "vendor/glm/", 
+    "src/", 
+    "demos/", 
+    "vendor/", 
+    "vendor/glad/include", 
+    "vendor/stb/include", 
+    "vendor/noise/", 
+    "vendor/glm/", 
+    "vendor/freeglut/include", 
 ]
 
 # -L
 libdirs = [
-
+    "vendor/freeglut/lib"
 ]
 
 # -l
