@@ -1,7 +1,7 @@
-cena 50 15 50
+cena 1500 25 500
 ilha 70
 lagos 30
-terrestres_1 18
-terrestres_2 18
+terrestres_1 5000
+terrestres_2 5000
 plantas_1 25
 plantas_2 25

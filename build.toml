@@ -29,13 +29,10 @@ includedirs = [
     "vendor/glad/include", 
     "vendor/stb/include", 
     "vendor/noise/", 
-    "vendor/glm/", 
-    "vendor/freeglut/include", 
 ]
 
 # -L
 libdirs = [
-    "vendor/freeglut/lib"
 ]
 
 # -l

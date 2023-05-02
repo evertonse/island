@@ -1,4 +1,3 @@
-#pragma once
 #include <array>
 #include <sstream>
 #include <string>
@@ -8,23 +7,79 @@
 #include "utils/common.h"
 #include "math/useful.hpp"
 
-namespace cyx {
 
-// Inheritance base vector, too much problems dont use this
-	template <class T, u32 DIM>
-	class vec {
-	
-	public:
-		std::array<T,DIM> numbers;
-	
+namespace cyx {
+    // *** This idead is from https://seanmiddleditch.github.io/c-method-type-deduction-tricks/
+    template <typename T, u32 DIM> 
+    struct VecData {
+        std::array<T, DIM> numbers;
+    };
+
+    template <typename T> 
+    struct VecData<T,2> {
+        union {
+            std::array<T, 2> numbers;
+            struct { T x, y; };
+            struct { T r, g; };
+            struct { T u, v; };
+            struct { T s, t; };
+        };
+    };
+
+    template <typename T> 
+    struct VecData<T,3> {
+        union {
+            std::array<T, 3> numbers;
+            struct { T x, y, z; };
+            struct { T r, g, b; };
+            struct { T s, t, p; };
+            struct { T u, v; };
+        };
+    };
+
+    template <typename T> 
+    struct VecData<T,4> {
+        union {
+            std::array<T, 4> numbers;
+            struct { T x, y, z, w; };
+            struct { T r, g, b, a; };
+            struct { T s, t, p, q; };
+            struct { T u, v; };
+        };
+    };
+
+	template <typename T, u32 DIM>
+	struct vec : public VecData<T,DIM> {
+        using VecData<T, DIM>::numbers;
+
         using vec_concrete = vec<T,DIM>;
-	public:
+        using vec2 = vec<f32,2>;
+        using vec3 = vec<f32,3>;
+        using vec4 = vec<f32,4>;
+
+        using veci2 = vec<i32,2>;
+        using veci3 = vec<i32,3>;
+        using veci4 = vec<i32,4>;
+
 		vec() {}
         vec& operator=(const vec& other) {
             if (this != &other) {
-                std::copy(other.numbers.begin(), other.numbers.end(), numbers.begin());
+                for (size_t i = 0; i < DIM; i++){
+                    (*this)[i] = other[i];
+                }
             }
             return *this;
+        }
+
+        // TODO  add support for default init if size of args < DIM
+        template<typename... Args>
+        vec(Args... args) {
+            static_assert(sizeof...(args) == DIM, " Args != from DIM");
+            T temp[DIM] = { args... };
+            for (size_t i = 0; i < DIM; i++) {
+                this->numbers[i] = temp[i];
+            }
+            
         }
 
         //template <typename AnotherType> 
@@ -36,7 +91,15 @@ namespace cyx {
             //return *this;
         //}
 
-        vec_concrete& operator=(vec_concrete&& other) noexcept {
+		vec(const vec& other) {
+            numbers = other.numbers;
+        };
+
+        vec(vec&& other) {
+            numbers = std::move(other.numbers);
+        }
+
+        vec& operator=(vec&& other) noexcept {
             if (this != &other) {
                 numbers = std::move(other.numbers);
             }
@@ -52,14 +115,14 @@ namespace cyx {
 		}
         
         vec(T *vals) {
-           for(int i = 0; i < DIM; i++){
+           for(size_t i = 0; i < DIM; i++){
                 numbers[i] = vals[i];
            } 
         }
 
 
         vec(const T *vals) {
-           for(int i = 0; i < DIM; i++){
+           for(size_t  i = 0; i < DIM; i++){
                 numbers[i] = vals[i];
            } 
         }
@@ -67,7 +130,7 @@ namespace cyx {
         
         template <typename AnotherType> 
         vec(const vec<AnotherType, DIM>& other){
-            for(int i = 0; i < DIM; i++) {
+            for(size_t   i = 0; i < DIM; i++) {
                 numbers[i] = (T)other[i];
             } 
         }
@@ -81,8 +144,6 @@ namespace cyx {
         //vec& operator=(const vec& other) { if (this != &other) { numbers = other.numbers; } return *this; }
 		//vec operator=(const vec& v) = default;
 
-		vec(const vec<T, DIM>& other) : numbers(other.numbers) {};
-        vec(vec<T, DIM>&& other) : numbers(std::move(other.numbers)) {}
 
 
 		/*==== vec operations ====*/
@@ -115,7 +176,7 @@ namespace cyx {
 		}
 
         static f32 length(vec other ) {
-            return std::sqrt(other.dot(other));
+            return std::sqrt((f32)other.dot(other));
         }
 
 		T dot(const vec& other) const {
@@ -253,7 +314,13 @@ namespace cyx {
 			return true; 
 		}
 	
-		bool operator != (const vec& other) const { return !this->operator==(other); }
+		bool operator != (const vec& other) const { 
+            for (size_t i = 0; i < DIM; i++) {
+                if((*this)[i] != other[i])
+                    return false;  
+            }
+			return true; 
+        }
 
 		
 		/*==== Utilities for vec ====*/
@@ -283,58 +350,18 @@ namespace cyx {
 		T* end()   { return (&numbers[DIM]); } //
 		
 		T* data()  { return numbers.data(); }
-	};
 
-    struct vec2 : public vec<f32,3> {
-        using MyBase   = vec<f32,3>;
-        
-        union {
-            struct {f32 &x,&y;};
-            struct {f32 &r,&g;};
-            struct {f32 &u,&v;};
-        };
-        
-        vec2& operator=(const vec2& other) { if (this != &other) { numbers = other.numbers; } return *this; }
-        vec2(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]){ };
-        vec2() :MyBase(),x(numbers[0]),y(numbers[1]){ };
-        vec2(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]){ };
-        vec2(f32 x, f32 y) :MyBase(std::initializer_list<f32>({x,y})),x(numbers[0]),y(numbers[1]){ };
-
-    };
-
-	struct vec3 : public vec<f32,3> {
-        using Type = f32;
-		using MyBase   = vec<Type,3>;
-		using ArrayType = std::array<Type,3>;
-		
-		union {
-			struct {f32 &x,&y,&z;};
-			struct {f32 &r,&g,&b;};
-		};
-
-        vec3& operator=(const vec3& other) {
-            const u32 count = numbers.size();
-            for (u32 i = 0; i < count; i++) {
-                (*this)[i] = other[i];
-            }
-            return (*this);
-        }
-
-		vec3(Type * v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(f32 x, f32 y, f32 z) :MyBase(std::initializer_list<f32>({x,y,z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		vec3(vec2 v, f32 z) :MyBase(std::initializer_list<f32>({v.x, v.y, z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
         vec3 cross(const vec3& other) const {
-            return vec3(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+            vec3& v1 = this;
+            vec3& v2 = other;
+            return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         } 
 
         static vec3 cross(const vec& v1, const vec& v2) {
             return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         }
         static vec3 left(const vec3& rotation) {
-            float yaw = radians(rotation.y);
+            float yaw = radians(rotation[1] + 90.0f);
             float x = std::cos(yaw);
             float y = 0;
             float z = std::sin(yaw);
@@ -345,77 +372,22 @@ namespace cyx {
         static vec3 right(const vec3& rotation) {
             return -left(rotation);
         }
+
+        static f32 angle(const vec3& v1, const vec3& v2) {
+            f32 dot_product = v1.dot(v2);
+            float magnitude_product = length(v1) * length(v2);
+            float cos_theta = dot_product / magnitude_product;
+            float theta = std::acos(cos_theta);
+            return theta;
+        }
 	};
 
-	struct vec4 : public vec<f32,4> {
-		using MyBase   = vec<f32,4>;
-		
-		union {
-			struct {f32 &x,&y,&z,&w;};
-			struct {f32 &r,&g,&b,&a;};
-		};
-		
-		vec4(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-		vec4() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[2]){ };
-		vec4(std::initializer_list<f32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[2]){ };
-		vec4(f32 x, f32 y, f32 z,f32 w) :MyBase(std::initializer_list<f32>({x,y,z,w})),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-		vec4(vec3 v, f32 w) :MyBase(std::initializer_list<f32>({v.x, v.y, v.z,w})),x(numbers[0]),y(numbers[1]),z(numbers[2]),w(numbers[3]){ };
-	};	
-    
-	struct veci3 : public vec<i32,3> {
-        using MyType = i32;
-		using MyBase   = vec<MyType,3>;
-		using ArrayType = std::array<MyType,3>;
-		
-		union {
-			struct {MyType &x,&y, &z;};
-			struct {MyType &r,&g, &b;};
-		};
+   using vec2 = vec<f32, u32(2)>;
+   using vec3 = vec<f32, u32(3)>;
+   using vec4 = vec<f32, u32(4)>;
 
-        veci3& operator=(veci3&& other) noexcept {
-            if (this != &other) {
-                MyBase::operator=(std::move(other));
-                x = std::exchange(other.x, 0);
-                y = std::exchange(other.y, 0);
-                z = std::exchange(other.z, 0);
-            }
-            return *this;
-        }        
-
-        veci3& operator=(const veci3& other) {
-            vec<MyType,3>::operator=(other);
-            x = other.x;
-            y = other.y;
-            z = other.z;
-            return *this;
-        }
-
-
-		veci3(MyType * v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3() :MyBase(),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3(std::initializer_list<MyType> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		veci3(MyType x, MyType y, MyType z) :MyBase(std::initializer_list<MyType>({x,y,z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-		//veci3(veci2 v, MyType z) :MyBase(std::initializer_list<MyType>({v.x, v.y, z})),x(numbers[0]),y(numbers[1]),z(numbers[2]){ };
-    };
-
-    struct veci2 : public vec<i32,3> {
-
-        using Type = i32;
-        using MyBase= vec<i32,3>;
+   using veci2 = vec<i32,u32(2)>;
+   using veci3 = vec<i32,u32(3)>;
+   using veci4 = vec<i32,u32(4)>;
         
-        union {
-            struct {i32 &x,&y;};
-            struct {i32 &r,&g;};
-            struct {i32 &u,&v;};
-            struct {i32 &width,&height;};
-        };
-        
-        veci2& operator=(const veci2& other) { {x = other.x; y = other.y; } return *this; }
-        veci2(vec v) :MyBase(v),x(numbers[0]),y(numbers[1]){ };
-        veci2() :MyBase(),x(numbers[0]),y(numbers[1]){ };
-        veci2(std::initializer_list<i32> vals) :MyBase(vals),x(numbers[0]),y(numbers[1]){ };
-        veci2(i32 x, i32 y) :MyBase(std::initializer_list<i32>({x,y})),x(numbers[0]),y(numbers[1]){ };
-
-    };
 };

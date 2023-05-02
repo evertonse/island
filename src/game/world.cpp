@@ -119,6 +119,11 @@ namespace island {
     }
 
     EntityType& Volume::operator()(i32 x, i32 y, i32 z) {
+        bool ok = ( (x < xdim && y < ydim && z < zdim)
+            &&  (x >= 0   && y >= 0   && z >= 0));
+        if(!ok){
+            std::cout << "Trying to access Volume with  "<< veci3(x,y,z) <<" which is outta bounds"; 
+            assert(ok);}
         assert( (x < xdim && y < ydim && z < zdim)
             &&  (x >= 0   && y >= 0   && z >= 0));
         return data[x + y*xdim + z*xdim*ydim];
@@ -327,14 +332,14 @@ namespace island {
                         ) *volume.ydim
                     );
                 #endif
-                height  = clamp(height,0,(int)volume.zdim-1);
+                height  = clamp(height,0,(int)volume.ydim-1);
 
                 //int height = water_level;
                 height_map[{x,z}] = height;
                 // The free list is places bove water level that are
                 // 1 unit above a block 
                 if (height > water_level) {
-                    free_list.push_back( new veci3(x, height ,z));
+                    free_list.push_back(new veci3(x, height ,z));
                 }
 
                 for (int y = height - 1; y >= 0; y--) {

@@ -1,11 +1,11 @@
 # Compile
 #### Debian-Based
 - ``bash src/main.cpp`` from the root
--  if doesnt work try ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3``
+-  if doesnt work try ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -g0``
 - try ``-lfreeglut`` instead of ``-lglut`` if prefer/problems
 
 #### Windows 
-- ``g++ src/main.cpp  -o bin/app  -Lfreeglut/lib -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/freeglut/include/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3``
+- ``g++ src/main.cpp  -o bin/app  -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -g0``
 
 # Run
 - ``bin/app`` [scene_input_file] 
