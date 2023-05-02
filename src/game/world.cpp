@@ -119,11 +119,6 @@ namespace island {
     }
 
     EntityType& Volume::operator()(i32 x, i32 y, i32 z) {
-        bool ok = ( (x < xdim && y < ydim && z < zdim)
-            &&  (x >= 0   && y >= 0   && z >= 0));
-        if(!ok){
-            std::cout << "Trying to access Volume with  "<< veci3(x,y,z) <<" which is outta bounds"; 
-            assert(ok);}
         assert( (x < xdim && y < ydim && z < zdim)
             &&  (x >= 0   && y >= 0   && z >= 0));
         return data[x + y*xdim + z*xdim*ydim];

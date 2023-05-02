@@ -1,11 +1,11 @@
 # Compile
 #### Debian-Based
 - ``bash src/main.cpp`` from the root
--  if doesnt work try ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -g0``
+-  if doesnt work try ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast``
 - try ``-lfreeglut`` instead of ``-lglut`` if prefer/problems
 
 #### Windows 
-- ``g++ src/main.cpp  -o bin/app  -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -g0``
+- ``g++ src/main.cpp  -o bin/app  -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast``
 
 # Run
 - ``bin/app`` [scene_input_file] 
@@ -38,7 +38,6 @@
 - The recommended settings are in ``src/input.txt``
 - If width or depth exceeds ``100`` might get pretty LOW fps. It's recommended to stay below this
 range, and the height be less then ``50``
-- WARNING, this project doesnt handle memory very efficiently so more than ``50`` terrestrials might crash the program with no warning
 
 # Project Folder Structure
 

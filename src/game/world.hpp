@@ -126,7 +126,7 @@ namespace island {
     private:
         void tendency(const Entity& e, std::vector<veci3>& neighbours);
         void prepare_entities(u32 count, EntityType type, f32 scale, vec3 translation);
-        void update_positions();
+        void force_inline update_positions();
         veci3* random_from_free_list();
         static f32 neighbour2angle(const vec3& n);
 
