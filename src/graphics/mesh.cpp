@@ -404,149 +404,195 @@ namespace cyx {
         return;
     }
 
-        void TripleBufferMesh::clear()
-        {
-            glDeleteBuffers(vbo_count, vbo);
-            glDeleteVertexArrays(1, &vao);
-        }
+    void TripleBufferMesh::clear()
+    {
+        glDeleteBuffers(vbo_count, vbo);
+        glDeleteVertexArrays(1, &vao);
+    }
 
-        void TripleBufferMesh::draw() {
-            glBindVertexArray(vao);
-            glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
-        }
+    void TripleBufferMesh::draw() {
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)verts.size());
+    }
 
-        void TripleBufferMesh::from(
-            TripleBufferMesh *self,
-            const f32 vertices[][3],
-            const f32 normals[][3],
-            const f32 uvs[][2],
-            const u32* indexes,
-            const u32 indexes_count,
-            const f32 scale
-        ){
+    void TripleBufferMesh::from(
+        TripleBufferMesh *self,
+        const f32 vertices[][3],
+        const f32 normals[][3],
+        const f32 uvs[][2],
+        const u32* indexes,
+        const u32 indexes_count,
+        const f32 scale
+    ){
 
-            self->verts   = std::vector<f32>();
-            self->normals = std::vector<f32>();
-            self->uvs     = std::vector<f32>();
+        self->verts   = std::vector<f32>();
+        self->normals = std::vector<f32>();
+        self->uvs     = std::vector<f32>();
 
-            for (size_t it = 0; it < indexes_count; it++) {
-                u32 i = indexes[it];
-                for (size_t j = 0; j < 3; j++) {
-                    self->verts.push_back(vertices[i][j]*scale);
-                    self->normals.push_back(normals[i][j]);
-                    if (j < 2) {
-                        self->uvs.push_back(uvs[i][j]);
-                    }
+        for (size_t it = 0; it < indexes_count; it++) {
+            u32 i = indexes[it];
+            for (size_t j = 0; j < 3; j++) {
+                self->verts.push_back(vertices[i][j]*scale);
+                self->normals.push_back(normals[i][j]);
+                if (j < 2) {
+                    self->uvs.push_back(uvs[i][j]);
                 }
             }
-            assert(self->verts.size() == self->normals.size());
-            assert(self->uvs.size() == (2*self->normals.size())/3);
-            self->init_gl();
-            
         }
+        assert(self->verts.size() == self->normals.size());
+        assert(self->uvs.size() == (2*self->normals.size())/3);
+        self->init_gl();
+        
+    }
 
-        void TripleBufferMesh::goblin(TripleBufferMesh *self) {
-            from(
+    void TripleBufferMesh::goblin(TripleBufferMesh *self) {
+        from(
+        self,
+        goblin_objVerts,
+        goblin_objNormals,
+        goblin_objTexCoords, 
+        goblin_objIndexes,
+        goblin_objIndexesCount,
+        0.82f
+        );
+    }
+
+    void TripleBufferMesh::tiger(TripleBufferMesh *self) {
+        from(
+        self,
+        tiger_objVerts,
+        tiger_objNormals,
+        tiger_objTexCoords, 
+        tiger_objIndexes,
+        tiger_objIndexesCount
+        );
+    }
+
+    void TripleBufferMesh::horse(TripleBufferMesh *self) {
+        from(
+        self,
+        horse_objVerts,
+        horse_objNormals,
+        horse_objTexCoords, 
+        horse_objIndexes,
+        horse_objIndexesCount
+        );
+    }
+
+    void TripleBufferMesh::cube(TripleBufferMesh *self) {
+        from(
+        self,
+        cube_objVerts,
+        cube_objNormals,
+        cube_objTexCoords, 
+        cube_objIndexes,
+        cube_objIndexesCount
+        );
+    }
+
+    void TripleBufferMesh::bamboo(TripleBufferMesh *self) {
+        from(
+        self,
+        bamboo_objVerts,
+        bamboo_objNormals,
+        bamboo_objTexCoords, 
+        bamboo_objIndexes,
+        bamboo_objIndexesCount
+        );
+    }
+
+    void TripleBufferMesh::plant1(TripleBufferMesh * self) {
+        from(
             self,
-            goblin_objVerts,
-            goblin_objNormals,
-            goblin_objTexCoords, 
-            goblin_objIndexes,
-            goblin_objIndexesCount,
-            0.82f
-            );
-        }
+            vase_plant_objVerts,
+            vase_plant_objNormals,
+            vase_plant_objTexCoords, 
+            vase_plant_objIndexes,
+            vase_plant_objIndexesCount
+        );
+    }
 
-        void TripleBufferMesh::tiger(TripleBufferMesh *self) {
-            from(
+    void TripleBufferMesh::enemy(TripleBufferMesh * self) {
+        from(
             self,
-            tiger_objVerts,
-            tiger_objNormals,
-            tiger_objTexCoords, 
-            tiger_objIndexes,
-            tiger_objIndexesCount
-            );
-        }
+            enemy_objVerts,
+            enemy_objNormals,
+            enemy_objTexCoords, 
+            enemy_objIndexes,
+            enemy_objIndexesCount
+        );
+    }
 
-        void TripleBufferMesh::horse(TripleBufferMesh *self) {
-            from(
-            self,
-            horse_objVerts,
-            horse_objNormals,
-            horse_objTexCoords, 
-            horse_objIndexes,
-            horse_objIndexesCount
-            );
-        }
 
-        void TripleBufferMesh::cube(TripleBufferMesh *self) {
-            from(
-            self,
-            cube_objVerts,
-            cube_objNormals,
-            cube_objTexCoords, 
-            cube_objIndexes,
-            cube_objIndexesCount
-            );
-        }
+    void TripleBufferMesh::terrain(
+        TripleBufferMesh * self, 
+        int width, int length, float spacing, float amplitude, float frequency) {
+        std::vector<f32> vertices;
+        std::vector<f32> normals;
+        std::vector<f32> uvs;
+        // Generate vertices, texture coordinates, and normals
+        for (int z = 0; z < length; z++) {
+            for (int x = 0; x < width; x++) {
+                // Calculate vertex position
+                float xPos = x * spacing;
+                float zPos = z * spacing;
+                float yPos = amplitude * (sinf(xPos * frequency) + cosf(zPos * frequency));
 
-        void TripleBufferMesh::bamboo(TripleBufferMesh *self) {
-            from(
-            self,
-            bamboo_objVerts,
-            bamboo_objNormals,
-            bamboo_objTexCoords, 
-            bamboo_objIndexes,
-            bamboo_objIndexesCount
-            );
-        }
+                // Add vertex position to list
+                vertices.push_back(xPos);
+                vertices.push_back(yPos);
+                vertices.push_back(zPos);
 
-        void TripleBufferMesh::plant1(TripleBufferMesh * self) {
-            from(
-                self,
-                vase_plant_objVerts,
-                vase_plant_objNormals,
-                vase_plant_objTexCoords, 
-                vase_plant_objIndexes,
-                vase_plant_objIndexesCount
-            );
-        }
+                // Calculate texture coordinates
+                float u = (float)x / (float)width;
+                float v = (float)z / (float)length;
 
-        void TripleBufferMesh::enemy(TripleBufferMesh * self) {
-            from(
-                self,
-                enemy_objVerts,
-                enemy_objNormals,
-                enemy_objTexCoords, 
-                enemy_objIndexes,
-                enemy_objIndexesCount
-            );
-        }
+                // Add texture coordinates to list
+                uvs.push_back(u);
+                uvs.push_back(v);
 
-        void TripleBufferMesh::init_gl() {
-            glGenVertexArrays(1, &vao);
-            glBindVertexArray(vao);
-            // 3 buffers because  easier
-            glGenBuffers(vbo_count, vbo);
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-                glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(verts[0]), verts.data(), GL_STATIC_DRAW);
-                glEnableVertexAttribArray(0);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+                // Calculate normal
+                float dx = amplitude * frequency * cosf(xPos * frequency);
+                float dy = 1.0f;
+                float dz = amplitude * frequency * sinf(zPos * frequency);
+                vec3 normal = vec3(dx, dy, dz).normalize();
+
+                // Add normal to list
+                normals.push_back(normal.x);
+                normals.push_back(normal.y);
+                normals.push_back(normal.z);
             }
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-                glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(normals[0]), normals.data(), GL_STATIC_DRAW);
-                glEnableVertexAttribArray(1);
-                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            }
-            {
-                glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-                glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(uvs[0]), uvs.data(), GL_STATIC_DRAW);
-                glEnableVertexAttribArray(2);
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-            }
         }
+        self->verts = vertices;
+        self->normals = normals;
+        self->uvs= uvs;
+    }
+
+
+    void TripleBufferMesh::init_gl() {
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+        // 3 buffers because  easier
+        glGenBuffers(vbo_count, vbo);
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+            glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(verts[0]), verts.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+            glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(normals[0]), normals.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+            glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(uvs[0]), uvs.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+        }
+    }
 
 
     void TripleBufferMesh::add_face(const std::vector<f32>& vert_palette, const std::vector<f32>& uv_palette,

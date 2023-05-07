@@ -17,10 +17,10 @@ namespace cyx {
         int argc = 0;
         char* argv[1] = { (char*)"" };
         glutInit(&argc, argv);
-        this->app->on_init(*this); // OBS  can1t call gl functions from here
+        this->app->on_init(*this); // OBS:  can't call gl functions from here
         
         auto flags = GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH;
-        // If you want MultiSample, uncomment the belows
+        // If you want MultiSample, uncomment the below
         flags = flags | GLUT_MULTISAMPLE;
         glutInitDisplayMode(flags);
         glutInitWindowPosition(
@@ -54,9 +54,9 @@ namespace cyx {
 
             // Update the previous time
         #endif
-            prev_time = current_time;
 
             app->on_update(*win, delta_time);
+            prev_time = current_time;
             // We could make swap buffer as a default, but I prefer leaving the user
             // to choose if wants to swap the buffer or not. 
             // (if you want you could uncomment the next lien)

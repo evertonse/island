@@ -57,9 +57,13 @@ Shader water(
     "assets/shaders/water.glsl"
 );
 
+
 std::vector<Entity> entities;
 SimpleTexture tex_horse;
 TripleBufferMesh horse;
+
+SimpleTexture tex_ocean;
+TripleBufferMesh ocean;
 
 // The skybox is better commented in its header file
 // and basically creates a sky effect, a light bluish sky
@@ -84,6 +88,8 @@ auto on_create(Window& win) {
 
     tex_horse.load("assets/textures/tex_horse.png");
     TripleBufferMesh::horse(&horse);
+    tex_ocean.load("assets/textures/water3.png");
+    TripleBufferMesh::terrain(&ocean,50,50, 2, 0.5, 2.5);
 
     shader.bind();
     shader.compile();
@@ -105,7 +111,6 @@ auto on_create(Window& win) {
 #endif
     skybox.init(ISLAND_SKYBOX,".png");
 }
-
 
 
 
@@ -213,6 +218,10 @@ void on_update(Window& win, f64 dt) {
         water.uniform_mat4("model", model.data(),true);
         e.model->mesh.draw();
     }
+    tex_ocean.bind();
+    ocean.draw();
+    horse.draw();
+
 
 
     light.bind();

@@ -22,13 +22,13 @@ out vec3 normal;
 out vec3 curr_pos;
 
 out float fog;
-const float fog_density = 0.011;
-const float fog_gradient = 1.57;
+const float fog_density = 0.0105;
+const float fog_gradient = 1.452;
 
 void main() {
 	// calculates current position
 	curr_pos = vec3(model * vec4(aPos, 1.0f));
-    vec4 relative_pos = view * vec4(curr_pos.xyz, 1.0);
+    vec4 relative_pos = view * vec4(curr_pos, 1.0);
     float dist = length(relative_pos.xyz);
     fog = clamp(exp(-pow(dist*fog_density, fog_gradient)), 0, 1.0);
 	// Outputs the positions/coordinates of all vertices
@@ -55,7 +55,7 @@ in vec3 curr_pos;
 in float fog;
 
 const vec4 DEUBG_COLOR = vec4(0.1, 1.0, 0.2 , 1.0);
-const vec3 light_position = vec3(1.0, 1000.0,10.0);
+const vec3 light_position = vec3(1000.0, 10000.0,1000.0);
 const vec4 light_color = vec4(1.0, 0.9, 0.9, 1.0);
 const vec4 sky_color = vec4(165,171,180, 255)/255.0;
 
@@ -93,7 +93,7 @@ void main() {
 	float specular_light = 0.387;
 	vec3  view_direction = normalize(cam_position - curr_pos);
 	vec3  reflection_direction = reflect(-light_direction, normal);
-	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.0), 12);
+	float spec_amount = pow(max(dot(view_direction, reflection_direction), 0.0), 18);
 	float specular = spec_amount * specular_light;
 
 	FragColor = texture(tex0, tex_coord) * light_color * (diffuse + ambient + specular);

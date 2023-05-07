@@ -27,6 +27,8 @@ mapped_objs.extend([
     # Extend the models right here with tuple (in_filepath, out_filepath)  
     # For example:
     # ('assets/models/cube/cube.obj','src/assets/cube_obj.h'),
+
+    #('assets/models/surface/surface.obj','src/assets/surface_obj.h'),
 ])
 
 for input_file,output_file in mapped_objs:

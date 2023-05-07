@@ -87,6 +87,7 @@ namespace cyx {
         static void bamboo(TripleBufferMesh *self);
         static void plant1(TripleBufferMesh *self);
         static void enemy(TripleBufferMesh *self);
+        static void terrain(TripleBufferMesh *self, int width, int length, float spacing, float amplitude, float frequency);
 
     private:
 
