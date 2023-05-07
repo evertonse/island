@@ -51,10 +51,10 @@ float height_factor1(vec3 curr_pos) {
     float freq1 = 1.7;
     float freq2 = 1.8;
     float freq3 = 0.8;
-    float amp1 = 0.08;
+    float amp1 = 0.15;
     float amp2 = 0.12;
     float amp3 = 0.17;
-    float slow = 0.0078;
+    float slow = 0.0068;
     
     // calculate terrain deformation using sine and cosine functions
     factor += amp1 * sin(time*slow * freq1 * curr_pos.x + rand(curr_pos.xxx));

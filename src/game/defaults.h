@@ -20,7 +20,14 @@ const float FOV = 75.0f;
 #define ISLAND_SKYBOX "assets/textures/skybox/sky/"
 //#define ISLAND_SKYBOX "assets/textures/skybox/cloud/"
 
-// doenst workd "assets/textures/ocean/ocean2.jpg"
+
+
+// ** Those 3 defined right below are probably the only good option **//
+//#define ISLAND_OCEAN_TEXTURE "assets/textures/ocean3.jpg"
+#define ISLAND_OCEAN_TEXTURE "assets/textures/pexels/ocean1.jpg"
+//#define ISLAND_OCEAN_TEXTURE "assets/textures/ocean4.jpg"
+
+  // doenst workd "assets/textures/ocean/ocean2.jpg"
 // DONT "assets/textures/ocean/ocean3.jpg"
 // DONT "assets/textures/ocean12.jpg"
 //"assets/textures/ocean4.jpg"
@@ -28,13 +35,7 @@ const float FOV = 75.0f;
 // DONT "assets/textures/ocean6.png"
 // dont"assets/textures/ocean/ocean4.jpg"
 // work but weird with current settings"assets/textures/ocean2.jpg"
-// DONT"assets/textures/ocean11.jpg"
-
-//#define ISLAND_OCEAN_TEXTURE "assets/textures/ocean3.jpg"
-
-#define ISLAND_OCEAN_TEXTURE "assets/textures/pexels/ocean1.jpg"
-//#define ISLAND_OCEAN_TEXTURE "assets/textures/ocean4.jpg"
-        
+// DONT"assets/textures/ocean11.jpg"      
 // NOT THAT GOOD #define ISLAND_OCEAN_TEXTURE "assets/textures/ocean12.jpg"    
 // okayge #define ISLAND_OCEAN_TEXTURE "assets/textures/ocean14.jpg"    
 // not #define ISLAND_OCEAN_TEXTURE "assets/textures/ocean16.jpg"    
