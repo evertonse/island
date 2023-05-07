@@ -10,3 +10,4 @@
 #include "assets/cube_obj.h"
 #include "assets/vase_plant_obj.h"
 #include "assets/enemy_obj.h"
+#include "assets/surface_obj.h"

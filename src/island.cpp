@@ -57,13 +57,17 @@ Shader water(
     "assets/shaders/water.glsl"
 );
 
+Shader ocean(
+    "assets/shaders/ocean.glsl"
+);
+
 
 std::vector<Entity> entities;
 SimpleTexture tex_horse;
 TripleBufferMesh horse;
 
 SimpleTexture tex_ocean;
-TripleBufferMesh ocean;
+TripleBufferMesh mesh_ocean;
 
 // The skybox is better commented in its header file
 // and basically creates a sky effect, a light bluish sky
@@ -88,8 +92,10 @@ auto on_create(Window& win) {
 
     tex_horse.load("assets/textures/tex_horse.png");
     TripleBufferMesh::horse(&horse);
-    tex_ocean.load("assets/textures/water3.png");
-    TripleBufferMesh::terrain(&ocean,50,50, 2, 0.5, 2.5);
+
+
+    tex_ocean.load(ISLAND_OCEAN_TEXTURE);
+    TripleBufferMesh::surface(&mesh_ocean);
 
     shader.bind();
     shader.compile();
@@ -97,6 +103,8 @@ auto on_create(Window& win) {
     light.compile();
     water.bind();
     water.compile();
+    ocean.bind();
+    ocean.compile();
 
     // Read the World from file input
     world.from_file(world_file);
@@ -160,6 +168,12 @@ void on_update(Window& win, f64 dt) {
     water.uniform_vec3("cam_position",cam.position.data());
     water.uniform_float("time", time);
 
+    ocean.bind();
+    ocean.uniform_mat4("projection",  projection.data(),true);
+    ocean.uniform_mat4("view",        view.data(), true);
+    ocean.uniform_vec3("cam_position",cam.position.data());
+    ocean.uniform_float("time", time);
+
 
 #if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
     shadow.begin();
@@ -203,6 +217,8 @@ void on_update(Window& win, f64 dt) {
         model = mat4::translate(model, vec3(e.transform.position)*2.001);
         light.uniform_mat4("model", model.data(),true);
         e.model->draw();
+        //tex_horse.bind();
+        //horse.draw();
     }
 
     // Draw the water
@@ -217,10 +233,16 @@ void on_update(Window& win, f64 dt) {
         model = mat4::translate(model, vec3(e.transform.position)*2.001);
         water.uniform_mat4("model", model.data(),true);
         e.model->mesh.draw();
+
     }
+
+    mat4 model = mat4::identity();
+    model = mat4::scale(model, 200.0);
+    model = mat4::translate(model,  vec3(0.0f, (f32)world.water_level, 0.0f)*2.0001f);
+    ocean.bind();
+    ocean.uniform_mat4("model", model.data(),true);
     tex_ocean.bind();
-    ocean.draw();
-    horse.draw();
+    mesh_ocean.draw();
 
 
 
@@ -323,13 +345,17 @@ void on_scroll(f32 dir) {
 // Init OpenGL configurations and call the gladLoader
 void init_gl(){
     gladLoadGL();
+
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
 	glEnable(GL_MULTISAMPLE);
+
 	glClearColor(0.0f, 0.0f, 0.1f, 0.0f);
 	glClearDepth(1.0);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
 	glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 }

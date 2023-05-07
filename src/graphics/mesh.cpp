@@ -447,13 +447,13 @@ namespace cyx {
 
     void TripleBufferMesh::goblin(TripleBufferMesh *self) {
         from(
-        self,
-        goblin_objVerts,
-        goblin_objNormals,
-        goblin_objTexCoords, 
-        goblin_objIndexes,
-        goblin_objIndexesCount,
-        0.82f
+            self,
+            goblin_objVerts,
+            goblin_objNormals,
+            goblin_objTexCoords, 
+            goblin_objIndexes,
+            goblin_objIndexesCount,
+            0.82f
         );
     }
 
@@ -487,6 +487,17 @@ namespace cyx {
         cube_objTexCoords, 
         cube_objIndexes,
         cube_objIndexesCount
+        );
+    }
+
+    void TripleBufferMesh::surface(TripleBufferMesh *self) {
+        from(
+        self,
+        surface_objVerts,
+        surface_objNormals,
+        surface_objTexCoords, 
+        surface_objIndexes,
+        surface_objIndexesCount
         );
     }
 
@@ -526,36 +537,68 @@ namespace cyx {
 
     void TripleBufferMesh::terrain(
         TripleBufferMesh * self, 
-        int width, int length, float spacing, float amplitude, float frequency) {
+        int width, int length, f32 spacing, f32 amplitude, f32 frequency
+    ) {
         std::vector<f32> vertices;
         std::vector<f32> normals;
         std::vector<f32> uvs;
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < length; j++) {
+                // calculate vertex position
+                float x = j * spacing;
+                float z = i * spacing;
+                float y = amplitude * std::sin(x * frequency) * std::cos(z * frequency);
+                vertices.push_back(x);
+                vertices.push_back(y);
+                vertices.push_back(z);
+
+                // calculate normal
+                float dx = -amplitude * frequency * std::cos(x * frequency) * std::cos(z * frequency);
+                float dy = amplitude * std::sin(x * frequency) * std::sin(z * frequency);
+                float dz = -amplitude * frequency * std::sin(x * frequency) * std::cos(z * frequency);
+                float length = std::sqrt(dx * dx + dy * dy + dz * dz);
+                normals.push_back(dx / length);
+                normals.push_back(dy / length);
+                normals.push_back(dz / length);
+
+                // calculate texture coordinate
+                float u = j / (float)(length- 1);
+                float v = i / (float)(width - 1);
+                uvs.push_back(u);
+                uvs.push_back(v);
+            }
+        }
+    #if 0
         // Generate vertices, texture coordinates, and normals
         for (int z = 0; z < length; z++) {
             for (int x = 0; x < width; x++) {
                 // Calculate vertex position
-                float xPos = x * spacing;
-                float zPos = z * spacing;
-                float yPos = amplitude * (sinf(xPos * frequency) + cosf(zPos * frequency));
+                f32 xPos = (x - (width / 2.0f)) * spacing;
+                f32 zPos = (z - (length / 2.0f)) * spacing;
+                f32 yPos = amplitude * (sinf(xPos * frequency) + cosf(zPos * frequency));
 
-                // Add vertex position to list
                 vertices.push_back(xPos);
                 vertices.push_back(yPos);
                 vertices.push_back(zPos);
 
                 // Calculate texture coordinates
-                float u = (float)x / (float)width;
-                float v = (float)z / (float)length;
+                f32 u = (f32)x / (f32)width;
+                f32 v = (f32)z / (f32)length;
 
-                // Add texture coordinates to list
                 uvs.push_back(u);
                 uvs.push_back(v);
 
+                f32 heightL = amplitude * sin(((x - 1) - (width / 2.0f) + z * width - (width / 2.0f)) * spacing * frequency);
+                f32 heightR = amplitude * sin(((x + 1) - (width / 2.0f) + z * width - (width / 2.0f)) * spacing * frequency);
+                f32 heightD = amplitude * sin((x - (width / 2.0f) + (z - 1) * width - (width / 2.0f)) * spacing * frequency);
+                f32 heightU = amplitude * sin((x - (width / 2.0f) + (z + 1) * width - (width / 2.0f)) * spacing * frequency);
+                vec3 normal = vec3(heightL - heightR, 2.0f, heightD - heightU).normalize();
+
                 // Calculate normal
-                float dx = amplitude * frequency * cosf(xPos * frequency);
-                float dy = 1.0f;
-                float dz = amplitude * frequency * sinf(zPos * frequency);
-                vec3 normal = vec3(dx, dy, dz).normalize();
+                //f32 dx = amplitude * frequency * cosf(xPos * frequency);
+                //f32 dy = 1.0f;
+                //f32 dz = amplitude * frequency * sinf(zPos * frequency);
+                //vec3 normal = vec3(dx, dy, dz).normalize();
 
                 // Add normal to list
                 normals.push_back(normal.x);
@@ -563,9 +606,11 @@ namespace cyx {
                 normals.push_back(normal.z);
             }
         }
+        #endif
         self->verts = vertices;
         self->normals = normals;
         self->uvs= uvs;
+        self->init_gl();
     }
 
 

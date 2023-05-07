@@ -11,6 +11,7 @@ objs = [Path(f) for f in [
     'assets/models/cube/cube.obj',
     'assets/models/plants/decorative/vase_plant.obj',
     'assets/models/enemy/enemy.obj',
+    'assets/models/surface/surface.obj',
 ]]
 
 mapped_objs = poly2tri(objs)
@@ -28,7 +29,6 @@ mapped_objs.extend([
     # For example:
     # ('assets/models/cube/cube.obj','src/assets/cube_obj.h'),
 
-    #('assets/models/surface/surface.obj','src/assets/surface_obj.h'),
 ])
 
 for input_file,output_file in mapped_objs:

@@ -23,12 +23,6 @@ out vec3 normal;
 out vec3 curr_pos;
 
 void main() {
-    //vec3 positionA = vec3(positionAraw.x,sin((positionAraw.y*2*M_PI)+degrees)*waveheight,positionAraw.z);
-    //vec3 positionB = vec3(positionBraw.x,sin((+positionBraw.y*2*M_PI)+degrees)*waveheight,positionBraw.z);
-    //vec3 positionC = vec3(positionCraw.x,sin((+positionCraw.y*2*M_PI)+degrees)*waveheight,positionCraw.z);
-    //vec3 ab= positionB-positionA;
-    //vec3 ac= positionC-positionA;
-
 	// calculates current position
 	curr_pos = vec3(model * vec4(aPos, 1.0f));
 	// Outputs the positions/coordinates of all vertices
