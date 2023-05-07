@@ -29,9 +29,6 @@ const unsigned int HEIGHT = 600;
 
 AccelCamera cam = AccelCamera(vec3(10.0f, 40.0f, 10.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
 
-VertexBuffer* VBO;
-VertexArray* VAO;
-
 // To make it fluid we take into account if the key is down ourself
 // instead of relying on 'key repeat' signal from the OS
 auto& key_is_down = * (new std::map<Key,bool>());
@@ -61,13 +58,8 @@ Shader water(
 );
 
 std::vector<Entity> entities;
-SimpleTexture tex_wall;
 SimpleTexture tex_horse;
-SimpleTexture tex_goblin;
-SimpleTexture tex_tiger;
-
-TripleBufferMesh tiger;
-TripleBufferMesh cube;
+TripleBufferMesh horse;
 
 // The skybox is better commented in its header file
 // and basically creates a sky effect, a light bluish sky
@@ -76,7 +68,6 @@ Skybox skybox;
 ShadowMap shadow;
 #endif
 // The world containing all its entities
-Model goblin;
 
 // Might be a bit heavy to keepit on the stack so we leave on the heap
 World& world = *(new World());
@@ -84,111 +75,15 @@ World& world = *(new World());
 // src input file for the world
 const char* world_file = "src/input.txt";
 // Vertices dos triângulos
-float vertices[] =
-{
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-
-    0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-    0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-    0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
 
 // Definir a posição dos cubos no espaço do mundo
-vec3 cubePositions[] = {
-    vec3( 0.0f,  0.0f,  0.0f),
-    vec3( 2.0f,  5.0f, -15.0f),
-    vec3(-1.5f, -2.2f, -2.5f),
-    vec3(-3.8f, -2.0f, -12.3f),
-    vec3( 2.4f, -0.4f, -3.5f),
-    vec3(-1.7f,  3.0f, -7.5f),
-    vec3( 1.3f, -2.0f, -2.5f),
-    vec3( 1.5f,  2.0f, -2.5f), 
-    vec3( 1.5f,  0.2f, -1.5f), 
-    vec3(-1.3f,  1.0f, -1.5f)
-};
+;
 
 auto on_create(Window& win) {
     init_gl();
-    // Vertex Buffer Object
 
-    // Vertex Array Object
-
-    // Vincular VAO, VBO e EBO
-    VAO = new VertexArray();
-    VBO = new VertexBuffer();
-    VAO->bind();
-
-    VBO->bind();
-    // Copiar dados dos vertices para o VBO vinculado
-    VBO->set_data(vertices, sizeof(vertices));
-
-    VertexLayout layout;
-    layout.push( VertexAttr::Float3 );
-    layout.push( VertexAttr::Float2 );
-
-    VAO->add(*VBO,layout);
-
-    tex_wall.load("assets/textures/wall.jpg");
     tex_horse.load("assets/textures/tex_horse.png");
-    tex_tiger.load("assets/textures/tiger_white.png");
-    goblin.texture.load("assets/textures/tex_goblin.png");
-    TripleBufferMesh::goblin(&goblin.mesh);
-    TripleBufferMesh::tiger(&tiger);
-    TripleBufferMesh::cube(&cube);
-    entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
-    entities.push_back(Entity::make(EntityType::TERRESTRIAL1));
-    entities.push_back(Entity::make(EntityType::TERRAIN_BLOCK));
-    entities.push_back(Entity::make(EntityType::TERRAIN_BLOCK));
-    entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
-    entities.push_back(Entity::make(EntityType::PLANT1));
-    entities.push_back(Entity::make(EntityType::PLANT2));
-    entities.push_back(Entity::make(EntityType::TERRESTRIAL2));
-    // Desvincular VBO e VAO para não modificar acidentalmente
-    VAO->unbind();
-    VBO->unbind();
-    // Habilitar teste do buffer de profundidade
+    TripleBufferMesh::horse(&horse);
 
     shader.bind();
     shader.compile();
@@ -229,7 +124,6 @@ void on_update(Window& win, f64 dt) {
     // Tick the position of the entities of the world
     world.tick_positions(dt);
     // Vincular textura
-    tex_wall.bind();
 
     // Projection Matrix from camera FOV it takes into 
     // account the width and height plus near and far planes
@@ -307,12 +201,10 @@ void on_update(Window& win, f64 dt) {
 
     // Draw the water
     water.bind();
-    bool first_time = true; 
+    if (world.water_entities.size() > 0) {
+        world.water_entities[0].model->texture.bind();
+    }
     for(auto& e : world.water_entities) {
-        if (first_time) {
-            e.model->texture.bind();
-            first_time = false;
-        } 
         mat4 model = mat4::identity();
         model = mat4::scale(model, e.transform.scale);
         model = mat4::translate(model, vec3(e.transform.position)*2.001);
@@ -334,47 +226,6 @@ void on_update(Window& win, f64 dt) {
     }
 
 
-
-    tex_tiger.bind();
-    tiger.draw();
-
-    VAO->bind();
-    VBO->bind();
-    shader.bind();
-    for(unsigned int i = 0; i < 10; i++) {
-        // Model Matrix
-        mat4 model = mat4::identity();
-        // Transformações
-        model = mat4::translate(model, cubePositions[i]);
-        float angle = 20.0f * i;
-        model = mat4::rotate(model, radians(angle), vec3(1.0f, 0.3f, 0.5f));
-        
-        // Enviar Model Matrix para o Vertex Shader
-        shader.uniform_mat4("model", model.data(),true);
-
-        // Desenhar triângulos a partir dos vertices
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        //glDrawElements(GL_TRIANGLES, vi.count(), GL_UNSIGNED_INT, NULL);
-    }
-
-    
-
-    VAO->bind();
-    shader.bind();
-    for(unsigned int i = 0; i < 10; i++) {
-        if (i  == 2 || i == 3){
-            tex_goblin.bind();
-        }
-        else {
-            tex_horse.bind();
-        }
-        mat4 model = mat4::identity();
-        model = mat4::translate(model, cubePositions[i]);
-        float angle = -20.0f * i;
-        model = mat4::rotate(model, radians(angle), vec3(1.0f, 0.3f, 0.5f));
-        shader.uniform_mat4("model", model.data(),true);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
 
     // For last we draw the skybox
     skybox.draw(view,projection);

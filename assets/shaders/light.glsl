@@ -21,11 +21,18 @@ out vec3 normal;
 // Outputs the current position for the Fragment Shader
 out vec3 curr_pos;
 
+out float fog;
+const float fog_density = 0.011;
+const float fog_gradient = 1.57;
+
 void main() {
 	// calculates current position
 	curr_pos = vec3(model * vec4(aPos, 1.0f));
+    vec4 relative_pos = view * vec4(curr_pos.xyz, 1.0);
+    float dist = length(relative_pos.xyz);
+    fog = clamp(exp(-pow(dist*fog_density, fog_gradient)), 0, 1.0);
 	// Outputs the positions/coordinates of all vertices
-	gl_Position = projection * view  * vec4(curr_pos, 1.0);
+	gl_Position = projection * relative_pos;
 
 	// Assigns the colors from the Vertex Data to "color"
 	color = aColor;
@@ -45,11 +52,12 @@ in vec4 color;
 in vec2 tex_coord;
 in vec3 normal;
 in vec3 curr_pos;
-in vec3 fog;
+in float fog;
 
 const vec4 DEUBG_COLOR = vec4(0.1, 1.0, 0.2 , 1.0);
-const vec3 light_position = vec3(0.0, 100000.0,10.0);
+const vec3 light_position = vec3(1.0, 1000.0,10.0);
 const vec4 light_color = vec4(1.0, 0.9, 0.9, 1.0);
+const vec4 sky_color = vec4(165,171,180, 255)/255.0;
 
 // Gets the position of the camera from the main function
 uniform sampler2D tex0;
@@ -89,6 +97,6 @@ void main() {
 	float specular = spec_amount * specular_light;
 
 	FragColor = texture(tex0, tex_coord) * light_color * (diffuse + ambient + specular);
-
+    FragColor = mix(sky_color, FragColor, fog);
     FragColor.w = 1.0;
 }
