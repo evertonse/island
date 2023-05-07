@@ -135,6 +135,7 @@ namespace cyx {
         // Cubemap has depth = 1.0 which will make it invisible in clip space
         // remember opengl z maz is 1.0 in clip space? so thats why
         glDepthFunc(GL_LEQUAL);
+        glCullFace(GL_FRONT);
         shader.bind();
         mat4 striped_view = mat4(view);
         // we do the following, we simply don't allow translations :)
@@ -161,6 +162,7 @@ namespace cyx {
 
         // Switch back to the normal depth function
         glDepthFunc(GL_LESS);
+        glCullFace(GL_BACK);
     }
 
 };

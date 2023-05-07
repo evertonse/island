@@ -200,6 +200,7 @@ namespace cyx {
 		T* begin() { return (&numbers[0]); }
 		T* end()   { return (&numbers[numbers.size()]); } //
 		T* data()  { return numbers.data(); }
+		const T* data() const { return numbers.data(); }
 
 
         static mat4 frustum(
@@ -292,24 +293,16 @@ namespace cyx {
         static mat4 ortho(
             f32 left, f32 right, f32 bottom, f32 top, f32 near, f32 far)
         {
-            assert(0 && "Make sure this function is row major");
-            mat4 m;
-            m[0] = 2 / (right - left);
-            m[1] = 0;
-            m[2] = 0;
-            m[3] = 0;
-            m[4] = 0;
-            m[5] = 2 / (top - bottom);
-            m[6] = 0;
-            m[7] = 0;
-            m[8] = 0;
-            m[9] = 0;
-            m[10] = -2 / (far - near);
-            m[11] = 0;
-            m[12] = -(right + left) / (right - left);
-            m[13] = -(top + bottom) / (top - bottom);
-            m[14] = -(far + near) / (far - near);
-            m[15] = 1;
+            mat4 m = mat4::identity();
+            m(0,0) = 2.0 / (right - left);
+            m(1,1) = 2.0 / (top - bottom);
+            // maybe is -2.0 because of opengl
+            m(2,2) = 2.0 / (far - near);
+
+            m(0,3) = -(right + left) / (f32)(right - left);
+            m(1,3) = -(top + bottom) / (f32)(top - bottom);
+            m(2,3) = -(far + near) / (f32)(far - near);
+            // m(3,3) is already 1.0
             return m;
         }
 

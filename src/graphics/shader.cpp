@@ -1,13 +1,14 @@
 #include "graphics/shader.hpp"
 #include "shader.hpp"
-
 namespace cyx {
     static void SHADER_ASSERT_LOCATION(int location,const char* filepath,const char* var) {
         if (location == -1) {
 			std::cout << "[Shader]:" 
                 << filepath <<" BAD uniform location: " << location 
                 << " for uniform: " << var  << "\n";
+            #if ! defined (SHADER_IGNORE_BAD_UNIFORM)
             exit(1);
+            #endif
 		}
     }
 

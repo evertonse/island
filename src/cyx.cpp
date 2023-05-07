@@ -5,6 +5,7 @@
 #include "noise.c"
 
 #include "graphics/vertex.cpp"
+#include "graphics/shadowmap.cpp"
 #include "graphics/skybox.cpp"
 #include "graphics/shader.cpp"
 #include "graphics/texture.cpp"

@@ -19,7 +19,10 @@ namespace cyx {
         glutInit(&argc, argv);
         this->app->on_init(*this); // OBS  can1t call gl functions from here
         
-        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH |GLUT_MULTISAMPLE);
+        auto flags = GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH;
+        // If you want MultiSample, uncomment the belows
+        //flags = flags | GLUT_MULTISAMPLE;
+        glutInitDisplayMode(flags);
         glutInitWindowPosition(
             (glutGet(GLUT_SCREEN_WIDTH) - width) / 2,
             (glutGet(GLUT_SCREEN_HEIGHT) - height) / 2
@@ -292,8 +295,8 @@ namespace cyx {
 
     auto GlutWindow::exit() -> void {
         assert(0&& 
-            "Glut does not support leaving Main Loop with out exiting whole program" 
-            "with that said you might consider using FreeGLUT which supports"
+            "Glut does not support leaving Main Loop without exiting whole program" 
+            "with that said, you might consider using FreeGLUT which supports"
             "glutLeaveMainLoop ( void );"
         );
     }

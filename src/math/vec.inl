@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <utility>
+#include <type_traits>
 #include "utils/common.h"
 #include "math/useful.hpp"
 
@@ -71,29 +72,28 @@ namespace cyx {
             return *this;
         }
 
-        // TODO  add support for default init if size of args < DIM
-        template<typename... Args>
-        vec(Args... args) {
-            static_assert(sizeof...(args) == DIM, " Args != from DIM");
-            T temp[DIM] = { args... };
+        template< typename... Args>
+        explicit vec(Args... args) {
+            static_assert(sizeof...(Args) == DIM, "size of Args != from vec dimension");
+            T temp[DIM] = { std::forward<Args>(args)... };
             for (size_t i = 0; i < DIM; i++) {
                 this->numbers[i] = temp[i];
             }
-            
         }
 
-        //template <typename AnotherType> 
-        //vec_concrete& operator=(const vec<AnotherType, DIM>& other){
-            //size_t count = this->numbers.size();
-            //for (size_t i = 0; i < count; i++) {
-                //(*this)[i] = static_cast<T>(other[i]);
-            //} 
-            //return *this;
-        //}
+        // We need to create another generic constructor because the copy constructor is not
+        // being called when the more generic Args... constructor exists, it keeps trying to use
+        // the Args... one,
+        template<typename U>
+        explicit vec(const vec<U,DIM> other) {
+            for (size_t i = 0; i < DIM; i++) {
+                this->numbers[i] = (T)other.numbers[i]; 
+            }
+        }
 
 		vec(const vec& other) {
             numbers = other.numbers;
-        };
+        }
 
         vec(vec&& other) {
             numbers = std::move(other.numbers);
@@ -128,12 +128,7 @@ namespace cyx {
         }
 
         
-        template <typename AnotherType> 
-        vec(const vec<AnotherType, DIM>& other){
-            for(size_t   i = 0; i < DIM; i++) {
-                numbers[i] = (T)other[i];
-            } 
-        }
+   
 
 		T& operator[]  (i32 index) { return numbers[index]; }
 		const T& operator[]  (i32 index) const { return numbers[index]; }
@@ -255,7 +250,8 @@ namespace cyx {
 			return new_vec; 
 		}
 
-		vec  operator *  (const T& rhs) { 		
+
+		vec  operator *  (const T& rhs) const { 		
 			vec new_vec;
 			for (size_t i = 0; i < DIM; i++) {
 				new_vec[i] = (*this)[i] * rhs;
@@ -306,7 +302,7 @@ namespace cyx {
 		}
 
 		/*==== Operator Overloading for booleans ====*/
-		bool operator==(const vec& other) {
+		bool operator==(const vec& other) const {
 			for (size_t i = 0; i < DIM; i++) {
 				if((*this)[i] != other[i])
 					return false;  

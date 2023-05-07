@@ -10,7 +10,7 @@
 
 #include "utils/common.h"
 #include "glad/glad.h"
-
+#define SHADER_IGNORE_BAD_UNIFORM
 namespace cyx {
 
 	enum class ShaderType {

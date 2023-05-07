@@ -16,7 +16,11 @@ namespace cyx {
             height = 2048;
         u32 fbo,texture;
         Shader shader;
-        void init(const vec3& light_position);
+        void init();
+        void begin();
+        void bind_texture();
+        void end(veci2 viewport);
+        mat4 matrix(); 
     };
-
+    
 }

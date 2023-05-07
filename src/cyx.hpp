@@ -14,6 +14,7 @@
 
 //#include "graphics/rendering.hpp"
 
+#include "graphics/shadowmap.hpp"
 #include "graphics/skybox.hpp"
 #include "graphics/texture.hpp"
 #include "graphics/vertex.hpp"

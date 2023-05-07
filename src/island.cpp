@@ -46,9 +46,15 @@ Shader shader(
     "assets/shaders/default.glsl"
 );
 
+#if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
+Shader light(
+    "assets/shaders/light_and_shadow.glsl"
+);
+#else
 Shader light(
     "assets/shaders/light.glsl"
 );
+#endif
 
 Shader water(
     "assets/shaders/water.glsl"
@@ -66,6 +72,9 @@ TripleBufferMesh cube;
 // The skybox is better commented in its header file
 // and basically creates a sky effect, a light bluish sky
 Skybox skybox;
+#if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
+ShadowMap shadow;
+#endif
 // The world containing all its entities
 Model goblin;
 
@@ -196,6 +205,9 @@ auto on_create(Window& win) {
     // Init the sky box with the chosen sky box
     // In the definition the this #define there is another option
     // for a cloudy skybox instead of the bluish sky
+#if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
+    shadow.init();
+#endif
     skybox.init(ISLAND_SKYBOX,".png");
 }
 
@@ -234,7 +246,12 @@ void on_update(Window& win, f64 dt) {
     light.uniform_mat4("projection",  projection.data(),true);
     light.uniform_mat4("view",        view.data(), true);
     light.uniform_vec3("cam_position",cam.position.data());
-    
+
+#if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
+    light.uniform_mat4("shadow_mvp",  shadow.matrix().data(), true);
+    shadow.bind_texture();
+    light.uniform_int("tex_shadow_map", 1);
+#endif    
     // Pass delta_time to make the water move
     persistent_data f32 time = dt;
     time += dt;
@@ -244,6 +261,23 @@ void on_update(Window& win, f64 dt) {
     water.uniform_vec3("cam_position",cam.position.data());
     water.uniform_float("time", time);
 
+
+#if defined(ISLAND_ENABLE_SHADOW) && ISLAND_ENABLE_SHADOW  == true
+    shadow.begin();
+    for(auto& e : world.movable_entities) {
+        mat4 model = mat4::identity();
+        // It is movable so we need to rotate to the corrected orientation
+        model = mat4::rotate(model, radians(e.transform.angle), {0.0, 1.0, 0.0});
+        model = mat4::scale(model, e.transform.scale);
+        // The width of a block is 2 so we need to translate by 2
+        // but since it has some z-value fightin we spread them apart
+        // by a small factor of 000.1
+        model = mat4::translate(model, vec3(e.transform.position)*2.001);
+        //shadow.shader.uniform_mat4("model", model.data(),true);
+        e.model->draw();
+    }
+    shadow.end(veci2(win.width(), win.height()));
+#endif
 
     light.bind();
     for(auto& e : world.entities) {
@@ -257,6 +291,7 @@ void on_update(Window& win, f64 dt) {
         e.model->draw();
     }
 
+    light.bind();
     for(auto& e : world.movable_entities) {
         mat4 model = mat4::identity();
         // It is movable so we need to rotate to the corrected orientation
@@ -272,12 +307,17 @@ void on_update(Window& win, f64 dt) {
 
     // Draw the water
     water.bind();
+    bool first_time = true; 
     for(auto& e : world.water_entities) {
+        if (first_time) {
+            e.model->texture.bind();
+            first_time = false;
+        } 
         mat4 model = mat4::identity();
         model = mat4::scale(model, e.transform.scale);
         model = mat4::translate(model, vec3(e.transform.position)*2.001);
         water.uniform_mat4("model", model.data(),true);
-        e.model->draw();
+        e.model->mesh.draw();
     }
 
 
@@ -426,8 +466,10 @@ void init_gl(){
 	glEnable(GL_MULTISAMPLE);
 	glClearColor(0.0f, 0.0f, 0.1f, 0.0f);
 	glClearDepth(1.0);
-	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 }
 
 // Update title with fps

@@ -409,8 +409,8 @@ namespace island {
         
         prepare_entities(terrestrial1_count, EntityType::TERRESTRIAL1, 2.5f, {0,0,0.22f});
         prepare_entities(terrestrial2_count, EntityType::TERRESTRIAL2, 1.25f, {0,0,0});
-        prepare_entities(plant1_count, EntityType::PLANT1, 4.8f, {0,0,0.0f});
-        prepare_entities(plant2_count, EntityType::PLANT2, 3.8f, {0,0,0.0f});
+        prepare_entities(plant1_count, EntityType::PLANT1, 4.8f, {0, -0.025f, 0.0f});
+        prepare_entities(plant2_count, EntityType::PLANT2, 3.8f, {0, 0, 0.0f});
 
         
         free_list.clear();
@@ -529,16 +529,11 @@ namespace island {
 
 
                     e.world_new_position  =  e.world_position + neighbour;
-
-              
-
-
-
                     e.transform.last_orientation = e.transform.orientation; 
                     e.transform.new_orientation = vec3(neighbour);
 
                     e.transform.last_angle = e.transform.angle; 
-                    e.transform.new_angle = neighbour2angle(neighbour);
+                    e.transform.new_angle = neighbour2angle(vec3(neighbour));
                     
                     e.transform.last_position = e.transform.position;
                     e.transform.new_position = e.transform.last_position + vec3(neighbour);
@@ -678,10 +673,11 @@ namespace island {
 }
 
     void World::tendency(const Entity & e, std::vector<veci3>& neighbours) {
+        veci3 orientation = veci3(e.transform.orientation);
         for (int i = 0; i < ISLAND_MOVABLE_TENDENCY; i++) {
-            neighbours.push_back(e.transform.orientation);
+            neighbours.push_back(veci3(orientation ));
             for(auto& n : neighbours) {
-                if (n != (-e.transform.orientation)) {
+                if (n != -orientation) {
                     neighbours.push_back(n);
                 }
             }

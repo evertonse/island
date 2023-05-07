@@ -7,6 +7,7 @@ const float SENSITIVITY = 0.25f;
 const float FOV = 75.0f;
 
 #define ISLAND_CUBE_VOLUME 2.0
+#define ISLAND_ENABLE_SHADOW false 
 #define ISLAND_FLAT_TERRAIN false 
 #define ISLAND_TERRAIN_OCTAVES 9 
 #define ISLAND_TERRAIN_PERSISTENCE 14500.0f 
