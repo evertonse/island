@@ -21,7 +21,7 @@ namespace cyx {
         
         auto flags = GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH;
         // If you want MultiSample, uncomment the belows
-        //flags = flags | GLUT_MULTISAMPLE;
+        flags = flags | GLUT_MULTISAMPLE;
         glutInitDisplayMode(flags);
         glutInitWindowPosition(
             (glutGet(GLUT_SCREEN_WIDTH) - width) / 2,

@@ -1,4 +1,4 @@
-cena 45 20 45
+cena 45 15 45
 ilha 70
 lagos 30
 terrestres_1 20

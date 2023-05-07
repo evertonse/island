@@ -24,7 +24,7 @@ void on_scroll(f32 dir);
 void on_mouse(Window&, f32 x, f32 y);
 void on_scroll(f32 dir);
 
-const unsigned int WIDTH = 800; 
+const unsigned int WIDTH = 750; 
 const unsigned int HEIGHT = 600;
 
 AccelCamera cam = AccelCamera(vec3(10.0f, 40.0f, 10.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
@@ -185,6 +185,7 @@ void on_update(Window& win, f64 dt) {
         e.model->draw();
     }
 
+
     light.bind();
     for(auto& e : world.movable_entities) {
         mat4 model = mat4::identity();
@@ -202,6 +203,7 @@ void on_update(Window& win, f64 dt) {
     // Draw the water
     water.bind();
     if (world.water_entities.size() > 0) {
+        // only bind the water once, it is faster like this
         world.water_entities[0].model->texture.bind();
     }
     for(auto& e : world.water_entities) {
