@@ -6,6 +6,10 @@ Small environment and "animation" rendered with OpenGl
 ![](assets/images/sc2.png)
 ![](assets/images/sc1.png)
 
+
+https://github.com/user-attachments/assets/59b9f9c5-e81d-48e5-a782-4313e44ddac1
+
+
 # Compile
 
     ./build.sh
