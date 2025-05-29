@@ -1,7 +1,5 @@
 #pragma once
-
 #include <iostream>
-#include <chrono>
 #include <ctime>
 #include <fstream>
 std::ofstream out("out.txt");

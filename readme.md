@@ -1,41 +1,43 @@
-# Compile
-#### Debian-Based
-- ``bash src/main.cpp`` from the root
--  if doesnt work try ``g++ src/main.cpp  -o bin/app -lglut -ldl -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast``
-- try ``-lfreeglut`` instead of ``-lglut`` if prefer/problems
+Small environment and "animation" rendered with OpenGl
 
-#### Windows 
-- ``g++ src/main.cpp  -o bin/app  -lfreeglut -Isrc/ -Idemos/ -Ivendor/ -Ivendor/glad/include/ -Ivendor/stb/include/ -Ivendor/noise/ -O3 -Ofast``
+# Showcase
+![](assets/images/sc4.png)
+![](assets/images/sc3.png)
+![](assets/images/sc2.png)
+![](assets/images/sc1.png)
+
+# Compile
+
+    ./build.sh
+
+It's a bash script that will build for Linux by default.
+But if your on `wsl` and has `mingw` installed, then it'll build a native windows static executable instead.
+If you're on `Msys2` it'll dectect and also build native windows executable.
+
 
 # Run
-- ``bin/app`` [scene_input_file] 
-- Window:  ``bin\app.exe`` [scene_input_file]
+- ``bin/island`` [scene_input_file]
 - If no ``scene_input_file`` is provided, a default one will be used
 
--------
-# Need: 
-## FreeGlut
+---
 
-#### Linux (Debian based)
-- ``sudo apt-get install freeglut3-dev``
-
-#### Windows
-- Use ``msys2/mingw`` terminal/shell to install freeglut with the command: ``pacman -S mingw-w64-x86_64-freeglut``.
-- If mingw libraries are not on path, go to the project directory using ``mingw shell`` called ``mingw64.exe`` and then compile it.
+# Need:
 ## C++ 20 compiler
 - Might work with c++17 compiler, but it was only tested with ``g++ 12.2.0``
 
------
+---
 
 # Commands:
 - ``w, s, d, a``  forward, backward, sideways movement
 - ``click`` and ``drag`` to control the view direction
-- ``space, q`` to go up 
--  ``crtl+space, e`` to go down (couldn't resolve the crlt glut problem, so the use of crtl is finnicky) 
+- ``space, q`` to go up
+-  ``e``       to go down
 - ``wheel`` to change fov
 
+---
+
 # Recommended Settings
-- The recommended settings are in ``src/input.txt``
+- You can feed environment settings to the executable through a argument path. The default settings are in ``src/input.txt``.
 - If width or depth exceeds ``100`` might get pretty LOW fps. It's recommended to stay below this
 range, and the height be less then ``50``
 
@@ -56,8 +58,3 @@ range, and the height be less then ``50``
 - ``docs/`` definition of the project from my class
 
 
-# Showcase
-![](assets/images/sc4.png)
-![](assets/images/sc3.png)
-![](assets/images/sc2.png)
-![](assets/images/sc1.png)

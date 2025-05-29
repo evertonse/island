@@ -3,8 +3,8 @@
 namespace cyx {
     static void SHADER_ASSERT_LOCATION(int location,const char* filepath,const char* var) {
         if (location == -1) {
-			std::cout << "[Shader]:" 
-                << filepath <<" BAD uniform location: " << location 
+			std::cout << "[Shader]:"
+                << filepath <<" BAD uniform location: " << location
                 << " for uniform: " << var  << "\n";
             #if ! defined (SHADER_IGNORE_BAD_UNIFORM)
             exit(1);
@@ -18,8 +18,70 @@ namespace cyx {
         return content;
     }
 
-	Shader::Shader(const char* filepath)
-	{
+	Shader::Shader(const char* filepath) {
+    this->_filepath = filepath;
+
+    if (filepath == nullptr) {
+        set_default(ShaderType::VERTEX);
+        set_default(ShaderType::FRAGMENT);
+        return;
+    }
+
+    FILE* file = fopen(filepath, "r");
+    if (!file) {
+        // Handle error - could set defaults or throw
+        set_default(ShaderType::VERTEX);
+        set_default(ShaderType::FRAGMENT);
+        return;
+    }
+
+    // Get file size
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Read entire file into a string
+    std::string source;
+    source.resize(file_size);
+    fread(&source[0], 1, file_size, file);
+    fclose(file);
+
+    // Find shader sections
+    size_t vertex_start = source.find("#pragma vertex");
+    size_t fragment_start = source.find("#pragma fragment");
+
+    // Extract vertex shader
+    if (vertex_start != std::string::npos) {
+        size_t start = source.find('\n', vertex_start) + 1;
+        size_t end = (fragment_start != std::string::npos) ? fragment_start : source.size();
+
+        _vertex_source = source.substr(start, end - start);
+
+        // Remove trailing whitespace/newlines
+        while (!_vertex_source.empty() && isspace(_vertex_source.back())) {
+            _vertex_source.pop_back();
+        }
+    } else {
+        set_default(ShaderType::VERTEX);
+    }
+
+    // Extract fragment shader
+    if (fragment_start != std::string::npos) {
+        size_t start = source.find('\n', fragment_start) + 1;
+        size_t end = source.size();
+
+        _fragment_source = source.substr(start, end - start);
+
+        // Remove trailing whitespace/newlines
+        while (!_fragment_source.empty() && isspace(_fragment_source.back())) {
+            _fragment_source.pop_back();
+        }
+    } else {
+        set_default(ShaderType::FRAGMENT);
+    }
+}
+#if 0
+	Shader::Shader(const char* filepath) {
         this->_filepath = filepath;
 		if (filepath == NULL) {
 				set_default(ShaderType::VERTEX);
@@ -34,9 +96,9 @@ namespace cyx {
 				assert(shaderfile && "Coundt open shader file somehow");
 
 				bool found_pragma_vertex = false, found_pragma_fragment = false;
-				
+
 				while (std::getline(shaderfile, line)) {
-				
+
 					if (line.find("#pragma") != std::string::npos) {
 						if  (line.find("vertex") != std::string::npos) {
 								// add to vertex string
@@ -68,14 +130,15 @@ namespace cyx {
 						}
 						default: {
 
-								assert(0 && "unreachable"); 
+								assert(0 && "unreachable");
 						}
 					}
 				}
 				_vertex_source   = vertex.str();
 				_fragment_source = fragment.str();        }
-	
+
 	}
+#endif
 
 	Shader::Shader(const char* vertex_path, const char* frag_path)
     :_vertex_source(read_file(vertex_path)),_fragment_source(read_file(frag_path)) { }
@@ -88,7 +151,7 @@ namespace cyx {
 		if (vertex_src == "") {
 				self.set_default(ShaderType::VERTEX);
                 assert(0 && "[Shader] Vertex Source in NULL \n");
-		}    
+		}
 		if (frag_src == "") {
 				self.set_default(ShaderType::FRAGMENT);
 				std::cout << "[Shader] Fragment Source in NULL \n";
@@ -126,7 +189,7 @@ namespace cyx {
             return _fragment_source.c_str();
         else if(type == ShaderType::VERTEX)
             return _vertex_source.c_str();
-        else 
+        else
             return nullptr;
 	}
 
@@ -152,7 +215,7 @@ namespace cyx {
         glLogCall(
             glShaderSource(shader, 1, &src, NULL)
         );
-		
+
         glLogCall(
             glCompileShader(shader);
         );
@@ -167,7 +230,7 @@ namespace cyx {
 				glDeleteShader(shader);
 				return false;
 		}
-	
+
 		return shader;
 	}
 
@@ -208,7 +271,7 @@ namespace cyx {
 		glAttachShader(_programID, vertex_shader);
 		glAttachShader(_programID, frag_shader);
 
-	
+
 		glLinkProgram(_programID);
 
 		valid(*this);
@@ -222,7 +285,7 @@ namespace cyx {
 				std::cout << "[ERROR]: couldnt link programID: " << _programID << info << "\n";
 				assert(0 && "look at console");
 				return false;
-		}   
+		}
 		//glGetProgramiv(_programID, GL_INFO_LOG_LENGTH, &sucess);
 		//if (sucess != GL_TRUE) {
 		//    char info[512];
@@ -248,7 +311,7 @@ namespace cyx {
 				std::cout << "[ERROR]: couldnt link programID: " << _programID << info << "\n";
 				assert(0 && "Look at console !! I guess you're already looking, look up then");
 				return false;
-		}   
+		}
 		return true;
 	}
 
@@ -262,7 +325,7 @@ namespace cyx {
 		GLint location = glGetUniformLocation(_programID, var);
 		glUniformMatrix4fv(location,1, transpose?GL_TRUE:GL_FALSE, values);
         SHADER_ASSERT_LOCATION(location,_filepath.c_str(),var);
-		
+
 	}
 
 	auto Shader::uniform_int(const char *var, i32 value) -> void {
@@ -291,5 +354,5 @@ namespace cyx {
 	}
 
 
-	
+
 }

@@ -132,11 +132,11 @@ namespace island {
     }
 
     bool Volume::on_bounds(veci3 v) const {
-        return  on_bounds(v.x,v.y,v.z);    
+        return  on_bounds(v.x,v.y,v.z);
     }
 
     veci3 Volume::dim() {
-        return veci3(xdim,ydim, zdim);
+        return veci3((int)xdim, (int)ydim, (int)zdim);
     }
 
     void Volume::destroy(Volume *self) {
@@ -150,7 +150,7 @@ namespace island {
                 for (int x = 0; x < self->xdim; x++) {
                     int index = x + y * self->xdim + z * self->xdim * self->ydim;
                     const auto value = self->data[index];
-                    vec3 position = vec3(x, y, z);
+                    vec3 position = vec3((f32)x, (f32)y, (f32)z);
                     file << position << " : " << u32(value) << "\n";
                 }
             }
@@ -327,18 +327,18 @@ namespace island {
                         ) *volume.ydim
                     );
                 #endif
-                height  = clamp(height,0,(int)volume.ydim-1);
+                height  = clamp(height,0,((int)volume.ydim)-1);
 
                 //int height = water_level;
                 height_map[{x,z}] = height;
                 // The free list is places bove water level that are
-                // 1 unit above a block 
+                // 1 unit above a block
                 if (height > water_level) {
                     free_list.push_back(new veci3(x, height ,z));
                 }
 
-                for (int y = height - 1; y >= 0; y--) {
-                    EntityType type = EntityType::SAND_BLOCK; 
+                for (long long int y = height - 1; y >= 0; y--) {
+                    EntityType type = EntityType::SAND_BLOCK;
                     volume(x,y,z)   = type;
                     
                 }
@@ -431,11 +431,11 @@ namespace island {
             e.world_position = veci3(*pos);
             e.world_new_position = veci3(*pos);
             e.transform.scale = scale;
-            e.transform.position  =  vec3(pos->x, pos->y-0.5f, pos->z) + translation;
+            e.transform.position  =  vec3((f32)pos->x, (f32)pos->y-0.5f, (f32)pos->z) + translation;
             e.transform.last_position =   vec3(e.transform.position);
             e.transform.new_position  =   vec3(e.transform.position);
 
-            e.transform.orientation = vec3(0,0,1);
+            e.transform.orientation = vec3(0.f, 0.f, 1.f);
             e.transform.last_orientation =   vec3(e.transform.orientation);
             e.transform.new_orientation  =   vec3(e.transform.orientation);
             if (type == EntityType::TERRESTRIAL1 || type == EntityType::TERRESTRIAL2) {
@@ -633,44 +633,73 @@ namespace island {
         }
     }
 
-    void World::from_file(const std::string& filename) {
-        std::ifstream input(filename);
-        if (!input.is_open()) {
-            std::cerr << "Could not open file: " << filename << std::endl;
-            return;
-        }
+    void World::from_file(const std::string &filename) {
+       FILE *file = fopen(filename.c_str(), "r");
+       if (!file) {
+          fprintf(stderr, "Could not open file: %s\n", filename.c_str());
+          return;
+       }
 
-        std::string label;
-        while (input >> label) {
-            if (label == "cena") {
-                input >> dimensions.x >> dimensions.y >> dimensions.z;
-            }
-            else if (label == "ilha") {
-                input >> island_percent;
-            }
-            else if (label == "lagos") {
-                input >> lake_percent;
-            }
-            else if (label == "terrestres_1") {
-                input >> terrestrial1_count;
-            }
-            else if (label == "terrestres_2") {
-                input >> terrestrial2_count;
-            }
-            else if (label == "plantas_1") {
-                input >> plant1_count;
-            }
-            else if (label == "plantas_2") {
-                input >> plant2_count;
-            }
-            else {
-                std::cout << "Não reconheço esse Label, espera-se [cena, ilha, lagos, terrestres1 ou 2, plantas1 ou 2]" << label << std::endl;
-                exit(1);
-            }
-        }
+       char label[512];
+       while (fscanf(file, "%31s", label) == 1) {
+          if (strcmp(label, "cena") == 0) {
+             fscanf(file, "%d %d %d", &dimensions.x, &dimensions.y, &dimensions.z);
+          } else if (strcmp(label, "ilha") == 0) {
+             fscanf(file, "%u", &island_percent);
+          } else if (strcmp(label, "lagos") == 0) {
+             fscanf(file, "%u", &lake_percent);
+          } else if (strcmp(label, "terrestres_1") == 0) {
+             fscanf(file, "%u", &terrestrial1_count);
+          } else if (strcmp(label, "terrestres_2") == 0) {
+             fscanf(file, "%u", &terrestrial2_count);
+          } else if (strcmp(label, "plantas_1") == 0) {
+             fscanf(file, "%u", &plant1_count);
+          } else if (strcmp(label, "plantas_2") == 0) {
+             fscanf(file, "%u", &plant2_count);
+          } else {
+             printf("Não reconheço esse Label, espera-se [cena, ilha, lagos, terrestres1 ou 2, plantas1 ou 2]%s\n", label);
+             fclose(file);
+             exit(1);
+          }
+       }
 
-    input.close();
-}
+       fclose(file);
+    }
+
+    // NOTE: There's some kind of bug when we use ifstream, so I'm changing all to C implementations. Once again Cpp embarrass me.
+#if 0
+    void World::from_file(const std::string &filename) {
+       std::ifstream input(filename);
+       if (!input.is_open()) {
+          std::cerr << "Could not open file: " << filename << std::endl;
+          return;
+       }
+
+       std::string label;
+       while (input >> label) {
+          if (label == "cena") {
+             input >> dimensions.x >> dimensions.y >> dimensions.z;
+          } else if (label == "ilha") {
+             input >> island_percent;
+          } else if (label == "lagos") {
+             input >> lake_percent;
+          } else if (label == "terrestres_1") {
+             input >> terrestrial1_count;
+          } else if (label == "terrestres_2") {
+             input >> terrestrial2_count;
+          } else if (label == "plantas_1") {
+             input >> plant1_count;
+          } else if (label == "plantas_2") {
+             input >> plant2_count;
+          } else {
+             std::cout << "Não reconheço esse Label, espera-se [cena, ilha, lagos, terrestres1 ou 2, plantas1 ou 2]" << label << std::endl;
+             exit(1);
+          }
+       }
+
+       input.close();
+    }
+#endif
 
     void World::tendency(const Entity & e, std::vector<veci3>& neighbours) {
         veci3 orientation = veci3(e.transform.orientation);

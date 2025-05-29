@@ -31,7 +31,7 @@ namespace cyx {
 
     auto TriangularMesh::load(const char* filename, bool normalize, bool auto_init)  -> TriangularMesh& {
         f32 max_val = 0;
-        std::ifstream file(filename);
+        std::ifstream file(filename, std::ios::in);
         
         assert(file.is_open() && "Failed to open file: ");
 
@@ -234,7 +234,7 @@ namespace cyx {
     // This function is a mix of my Triangular Mesh and some other adaptation
     void TripleBufferMesh::load(std::string filepath)
     {
-        std::ifstream fin(filepath);
+        std::ifstream fin(filepath, std::ios::in);
         if (!fin) 
         {
             vao    = nullbuffer;

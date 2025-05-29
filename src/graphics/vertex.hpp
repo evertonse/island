@@ -80,6 +80,7 @@ namespace cyx {
 				case Int3:     return GL_INT;
 				case Int4:     return GL_INT;
 				case Bool:     return GL_BOOL;
+				case None:     assert(0 && "trying to pass none to");
 			}
 			return 0;
 		}
@@ -97,6 +98,7 @@ namespace cyx {
 				case Int3:     return "GL_INT  ";
 				case Int4:     return "GL_INT  ";
 				case Bool:     return "GL_BOOL ";
+				case None:     assert(0 && "trying to get none string");
 			}
 			return 0;
 		}
@@ -116,7 +118,8 @@ namespace cyx {
 				case Bool  :  return 1;
 
 				case Mat3  :  return 4*3*3;
-				case Mat4  :  return 4*4*4; 
+				case Mat4  :  return 4*4*4;
+				case None:     assert(0 && "trying to get size of type none ");
 			}
 
 			assert(0 && "WTF you passed some bullshit here, try an actual type");
@@ -138,6 +141,7 @@ namespace cyx {
 
 				case Mat3  :  return 3; // 3 of Float3
 				case Mat4  :  return 4; // 4 of Float4
+				case None:     assert(0 && "trying to get count of type none ");
 			}
 			assert(0 && "WTF you passed some bullshit here, try an actual type");
 		}

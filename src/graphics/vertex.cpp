@@ -40,7 +40,7 @@ namespace cyx {
 					VertexAttr::to_glenum(attr.type),
 					attr.normalized ? GL_TRUE : GL_FALSE,
 					layout.stride(),
-					(const void*) attr.offset
+					(const void*) ((u64)attr.offset)
 				)
 			);
             out << "i:" << i << '\n';
@@ -218,7 +218,7 @@ namespace cyx {
 			GL_FLOAT 			/* Type of each data is only float	*/,
 			GL_FALSE 			/* Not normalized                  	*/,
 			stride_size      	/* If other attrib, so  stride   	*/,
-			(const void*)offset_size
+			(const void*)(i64)offset_size
 		);
 
 	}

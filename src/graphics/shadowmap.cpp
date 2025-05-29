@@ -44,7 +44,7 @@ cyx::mat4 cyx::ShadowMap::matrix() {
     };
 
     mat4 projection = mat4::ortho(-10,10,-10,10,-10,20);
-    vec3 light_dir = vec3(0.5,2,2);
+    vec3 light_dir = vec3(0.5f, 2.f, 2.f);
     mat4 view = mat4::lookat(light_dir, {0,0,0}, {0,1,0});
     mat4 model = mat4::identity();
     return fix_tex_coord % projection % view % model;
@@ -59,8 +59,8 @@ void cyx::ShadowMap::begin() {
     glClear(GL_DEPTH_BUFFER_BIT);
 
     mat4 projection = mat4::ortho(-10,10,-10,10, -10.0, 10.0);
-    vec3 light_pos = vec3(1,2,1);
-    vec3 light_dir = vec3(1.0,2,2);
+    vec3 light_pos = vec3(1.0f, 2.f, 1.f);
+    vec3 light_dir = vec3(1.0f, 2.f, 2.f);
     mat4 view = mat4::lookat(light_pos, light_pos + light_dir, {0,1,0});
     mat4 model = mat4::identity();
 	shader.bind();

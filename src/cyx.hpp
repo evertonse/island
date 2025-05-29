@@ -29,4 +29,5 @@
 #include "game/world.hpp"
 //#include "game/player.hpp"
 
-#include "platform/glut_window.hpp"
+// #include "platform/glut_window.hpp"
+#include "platform/glfw_window.hpp"

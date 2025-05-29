@@ -1,0 +1,67 @@
+#pragma once
+#include <iostream>
+#include <list>
+#include <functional>
+#include <map>
+
+#include "GLFW/glfw3.h"
+#include "utils/common.h"
+#include "graphics/window.hpp"
+// #define WINDOW_USE_CHRONO
+
+#if defined(WINDOW_USE_CHRONO)
+    #include <chrono>
+#endif
+
+namespace cyx {
+
+// Platform implementation of interface Window using GLFW
+class GlfwWindow : public Window {
+public:
+    GlfwWindow(Application* app, const char* title = "Glfw Window", int width = 600, int height = 400);
+    ~GlfwWindow();
+
+    auto start() -> void override;
+    auto exit() -> void override;
+
+    auto title() -> const char* override;
+    auto height() -> u32 override;
+    auto width() -> u32 override;
+
+    auto set_cursor(Cursor cur) -> void override;
+    auto set_width(u32 new_width) -> void override;
+
+    auto set_mouse(i32 x, i32 y) -> void override;
+    auto set_height(u32 new_height) -> void override;
+
+    auto set_fullscreen(bool fullscreen) -> void override;
+    auto set_title(const char* title) -> void override;
+    
+    auto delay(u32) -> void override;
+    auto ticks() -> u32 override;
+
+    auto swap_buffer() -> void override;
+    
+    // Additional GLFW-specific functionality if needed
+    auto native_window() -> GLFWwindow* { return _window; }
+
+private:
+    auto map_keys() -> void;
+    auto setup_callbacks() -> void;
+
+    Application* app;
+    GLFWwindow* _window;
+    const char* _title;
+    u32 _width, _height;
+    i32 _restore_width, _restore_height;
+    i32 _restore_x, _restore_y;
+
+
+    // Static members for callback handling
+    static Application* curr_app;
+    static GlfwWindow* curr_win;
+    static Event event;
+    static std::map<int, Key> key_map;  // Changed to int for GLFW key codes
+};
+
+} // namespace cyx

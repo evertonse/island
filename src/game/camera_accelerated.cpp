@@ -41,11 +41,11 @@ struct AccelCamera {
     AccelCamera() = default; 
     AccelCamera(const AccelCamera& other) = default;
     // Move constructor
-    AccelCamera(AccelCamera&& other) noexcept = default;
+    AccelCamera(AccelCamera&& other) noexcept = delete;
     // Copy assignment operator
-    AccelCamera& operator=(const AccelCamera& other) = default;
+    AccelCamera& operator=(const AccelCamera& other) = delete;
     // Move assignment operator
-    AccelCamera& operator=(AccelCamera&& other) noexcept = default;
+    AccelCamera& operator=(AccelCamera&& other) noexcept = delete;
     
 
     mat4 to_view_matrix() const {
@@ -82,8 +82,7 @@ struct AccelCamera {
     }
 
     void on_key(Key key, f32 dt) {
-        // 
-        float SPEED = 7.45f * speed * dt;
+        float SPEED = 5.05f * speed * dt;
 
         persistent_data Key key_before = key;
         if (key == Key::SHIFT) {
@@ -94,26 +93,27 @@ struct AccelCamera {
         // and we add 90 to the yaw to get the forward vector and we add to the
         // acceleration, the same for the backwards vector
         if (key == Key::W) {
-            acceleration += vec3::left(vec3(pitch,yaw + 90.0, 0.0)) * SPEED;
+            acceleration += vec3::left(vec3(pitch, yaw + 90.0f, 0.0f)) * SPEED;
         }
         else if (key == Key::S) {
-            acceleration += vec3::right(vec3(pitch, yaw + 90.0, 0.0)) * SPEED;
+            acceleration += vec3::right(vec3(pitch, yaw + 90.0f, 0.0f)) * SPEED;
         }
         // Here, we dont need to add the 90f because left is just left
         else if (key == Key::A) {
-            acceleration += vec3::left(vec3(pitch,yaw, 0.0f)) * SPEED;
+            acceleration += vec3::left(vec3(pitch, yaw, 0.0f)) * SPEED;
         }
         else if (key == Key::D) {
-            acceleration += vec3::right(vec3(pitch,yaw,0.0)) * SPEED;
+            acceleration += vec3::right(vec3(pitch, yaw, 0.0f)) * SPEED;
         }
-        // Here e only add the y which is up
-        else if ((key == Key::E) || (key == Key::CTRL) || key == Key::SHIFT) {
+        // NOTE: CRTL, SHIFT is bugged right now, we have no crtl keyup event
+        else if (key == Key::E ) {
             acceleration.y -= SPEED * 2;
         }
-        else if (key == Key::Q || key == Key::SPACE){
+        // else if (key == Key::Q || key == Key::SPACE){
+        else if (key == Key::SPACE || key == Key::Q) {
             acceleration.y += SPEED * 2.198;
-        }    
-        key_before = key; 
+        }
+        key_before = key;
     }
 
     void on_mouse(f64 xoffset, f64 yoffset, bool locked = false) {
