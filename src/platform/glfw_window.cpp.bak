@@ -1,0 +1,289 @@
+#include "platform/glfw_window.hpp"
+#include "glfw_window.hpp"
+#include <cassert>
+
+static void error_callback(int error, const char *description) {
+    std::cerr << "glfw Error: " << error << description << '\n';
+}
+
+namespace cyx {
+
+    Application* GlfwWindow::curr_app = nullptr;
+    GlfwWindow* GlfwWindow::curr_win = nullptr;
+    Event GlfwWindow::event = Event{};
+    std::map<int, Key> GlfwWindow::key_map = std::map<int, Key>();
+
+    GlfwWindow::GlfwWindow(Application* app, const char* title, int width, int height) {
+        glfwSetErrorCallback(error_callback);
+        if (!glfwInit()) {
+            std::cerr << "glfw Error: " << "'glfwInit' could not init" << '\n';
+            return;
+        }
+
+        this->app = app;
+        GlfwWindow::curr_app = app;
+        GlfwWindow::curr_win = this;
+        
+        // Configure window hints
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+        glfwWindowHint(GLFW_SAMPLES, 4); // Multisampling
+        
+        // Get monitor for centering
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        
+        // Create window
+        _window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+        if (!_window) {
+            glfwTerminate();
+            std::cerr << "glfwCreateWindow: " << "failed" << '\n';
+            return;
+        }
+        std::cout << "glfw window created with success\n";
+        
+        // Center window
+        glfwSetWindowPos(_window,
+                        (mode->width - width) / 2,
+                        (mode->height - height) / 2);
+        
+        glfwMakeContextCurrent(_window);
+        gladLoadGL();
+        glfwSwapInterval(1); // Enable vsync
+        
+        this->_width = width;
+        this->_height = height;
+        this->_title = title;
+        
+        // Initialize key mapping
+        map_keys();
+        
+        // Set callbacks
+        glfwSetWindowUserPointer(_window, this);
+        
+        glfwSetWindowSizeCallback(_window, [](GLFWwindow* window, int width, int height) {
+            auto win = static_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+            win->_width = width;
+            win->_height = height;
+            
+            Event e;
+            e.type = EventType::RESHAPE;
+            win->app->on_event(*win, e);
+        });
+        
+        glfwSetKeyCallback(_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+            auto win = static_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+            
+            Event e;
+            if (action == GLFW_PRESS) {
+                e.type = EventType::KEYDOWN;
+            } else if (action == GLFW_RELEASE) {
+                e.type = EventType::KEYUP;
+            } else if (action == GLFW_REPEAT) {
+                e.type = EventType::KEYDOWN; // Or you might want a KEYREPEAT event type
+            }
+            
+            // Handle modifiers
+            if (mods & GLFW_MOD_SHIFT) {
+                e.key = Key::SHIFT;
+                win->app->on_event(*win, e);
+            }
+            if (mods & GLFW_MOD_CONTROL) {
+                e.key = Key::CTRL;
+                win->app->on_event(*win, e);
+            }
+            if (mods & GLFW_MOD_ALT) {
+                // Should we have ALT?
+                // e.key = Key::ALT;
+                win->app->on_event(*win, e);
+            }
+            
+            // Map the key
+            if (key_map.find(key) != key_map.end()) {
+                e.key = key_map[key];
+                win->app->on_event(*win, e);
+            }
+        });
+        
+        glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int button, int action, int mods) {
+            auto win = static_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+            
+            Event e;
+            if (action == GLFW_PRESS) {
+                e.type = EventType::MOUSEDOWN;
+            } else if (action == GLFW_RELEASE) {
+                e.type = EventType::MOUSEUP;
+            }
+            
+            switch (button) {
+                case GLFW_MOUSE_BUTTON_LEFT:
+                    e.mouse.button = MouseButton::LEFT;
+                    break;
+                case GLFW_MOUSE_BUTTON_MIDDLE:
+                    e.mouse.button = MouseButton::MIDDLE;
+                    break;
+                case GLFW_MOUSE_BUTTON_RIGHT:
+                    e.mouse.button = MouseButton::RIGHT;
+                    break;
+            }
+            
+            win->app->on_event(*win, e);
+        });
+        
+        glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double xpos, double ypos) {
+            auto win = static_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+            
+            Event e;
+            e.type = EventType::MOUSEMOVE;
+            e.mouse.x = static_cast<int>(xpos);
+            e.mouse.y = static_cast<int>(ypos);
+            
+            win->app->on_event(*win, e);
+        });
+        
+        glfwSetScrollCallback(_window, [](GLFWwindow* window, double xoffset, double yoffset) {
+            auto win = static_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+            
+            Event e;
+            e.type = EventType::MOUSEWHEEL;
+            e.mouse.wheel.dir = static_cast<int>(yoffset); // Positive or negative for direction
+            
+            win->app->on_event(*win, e);
+        });
+        
+        // Initialize the application
+        this->app->on_init(*this);
+        this->app->on_create(*this);
+    }
+    
+    GlfwWindow::~GlfwWindow() {
+        if (_window) {
+            glfwDestroyWindow(_window);
+        }
+    }
+    
+    auto GlfwWindow::map_keys() -> void {
+        // Alphabet keys
+        key_map[GLFW_KEY_A] = Key::A; key_map[GLFW_KEY_B] = Key::B; key_map[GLFW_KEY_C] = Key::C;
+        key_map[GLFW_KEY_D] = Key::D; key_map[GLFW_KEY_E] = Key::E; key_map[GLFW_KEY_F] = Key::F;
+        key_map[GLFW_KEY_G] = Key::G; key_map[GLFW_KEY_H] = Key::H; key_map[GLFW_KEY_I] = Key::I;
+        key_map[GLFW_KEY_J] = Key::J; key_map[GLFW_KEY_K] = Key::K; key_map[GLFW_KEY_L] = Key::L;
+        key_map[GLFW_KEY_M] = Key::M; key_map[GLFW_KEY_N] = Key::N; key_map[GLFW_KEY_O] = Key::O;
+        key_map[GLFW_KEY_P] = Key::P; key_map[GLFW_KEY_Q] = Key::Q; key_map[GLFW_KEY_R] = Key::R;
+        key_map[GLFW_KEY_S] = Key::S; key_map[GLFW_KEY_T] = Key::T; key_map[GLFW_KEY_U] = Key::U;
+        key_map[GLFW_KEY_V] = Key::V; key_map[GLFW_KEY_W] = Key::W; key_map[GLFW_KEY_X] = Key::X;
+        key_map[GLFW_KEY_Y] = Key::Y; key_map[GLFW_KEY_Z] = Key::Z;
+        
+        // Function keys
+        key_map[GLFW_KEY_F1] = Key::F1; key_map[GLFW_KEY_F2] = Key::F2; key_map[GLFW_KEY_F3] = Key::F3;
+        key_map[GLFW_KEY_F4] = Key::F4; key_map[GLFW_KEY_F5] = Key::F5; key_map[GLFW_KEY_F6] = Key::F6;
+        key_map[GLFW_KEY_F7] = Key::F7; key_map[GLFW_KEY_F8] = Key::F8; key_map[GLFW_KEY_F9] = Key::F9;
+        key_map[GLFW_KEY_F10] = Key::F10; key_map[GLFW_KEY_F11] = Key::F11; key_map[GLFW_KEY_F12] = Key::F12;
+        
+        // Arrow keys
+        key_map[GLFW_KEY_LEFT] = Key::ARROWLEFT; key_map[GLFW_KEY_UP] = Key::ARROWUP;
+        key_map[GLFW_KEY_RIGHT] = Key::ARROWRIGHT; key_map[GLFW_KEY_DOWN] = Key::ARROWDOWN;
+        
+        // Special keys
+        key_map[GLFW_KEY_ENTER] = Key::ENTER;
+        key_map[GLFW_KEY_ESCAPE] = Key::ESCAPE;
+        key_map[GLFW_KEY_TAB] = Key::TAB;
+        key_map[GLFW_KEY_SPACE] = Key::SPACE;
+    }
+    
+    auto GlfwWindow::width() -> u32 {
+        return _width;
+    }
+    
+    auto GlfwWindow::height() -> u32 {
+        return _height;
+    }
+    
+    auto GlfwWindow::set_width(u32 new_width) -> void {
+        _width = new_width;
+        if (_window == nullptr) return;
+        glfwSetWindowSize(_window, new_width, _height);
+    }
+    
+    auto GlfwWindow::set_height(u32 new_height) -> void {
+        _height = new_height;
+        if (_window == nullptr) return;
+        glfwSetWindowSize(_window, _width, new_height);
+    }
+    
+    auto GlfwWindow::set_mouse(i32 x, i32 y) -> void {
+        if (_window == nullptr) return;
+        glfwSetCursorPos(_window, x, y);
+    }
+    
+    auto GlfwWindow::set_cursor(Cursor cur) -> void {
+        if (_window == nullptr) return;
+        if (cur == Cursor::NONE) {
+            glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        } else {
+            glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
+    }
+    
+    auto GlfwWindow::set_title(const char* title) -> void {
+        if (_window == nullptr) return;
+        _title = title;
+        glfwSetWindowTitle(_window, title);
+    }
+    
+    auto GlfwWindow::ticks() -> u32 {
+        return static_cast<u32>(glfwGetTime() * 1000); // Convert to milliseconds
+    }
+    
+    auto GlfwWindow::title() -> const char* {
+        return _title;
+    }
+    
+    auto GlfwWindow::swap_buffer() -> void {
+        glfwSwapBuffers(_window);
+    }
+    
+    auto GlfwWindow::start() -> void {
+        persistent_data double prev_time = glfwGetTime();
+        
+        while (!glfwWindowShouldClose(_window)) {
+            double current_time = glfwGetTime();
+            double delta_time = current_time - prev_time;
+            prev_time = current_time;
+            
+            app->on_update(*this, delta_time);
+            
+            glfwPollEvents();
+            swap_buffer();
+        }
+    }
+    
+    auto GlfwWindow::exit() -> void {
+        glfwSetWindowShouldClose(_window, GLFW_TRUE);
+    }
+
+    auto GlfwWindow::set_fullscreen(bool fullscreen) -> void {
+       if (fullscreen) {
+          // Store current window position/size for restoring later
+          glfwGetWindowPos(_window, &_restore_x, &_restore_y);
+          glfwGetWindowSize(_window, &_restore_width, &_restore_height);
+
+          GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+          const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+          glfwSetWindowMonitor(_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+       } else {
+          // Restore to windowed mode with previous size and position
+          glfwSetWindowMonitor(_window, nullptr, _restore_x, _restore_y, _restore_width, _restore_height, 0);
+       }
+    }
+    
+    auto GlfwWindow::delay(u32 ms) -> void {
+        // GLFW doesn't have a direct delay function, but we can implement one
+        double start = glfwGetTime();
+        while ((glfwGetTime() - start) * 1000 < ms) {
+            glfwPollEvents();
+        }
+    }
+}

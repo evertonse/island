@@ -7,7 +7,7 @@
 #include <map>
 #include "utils/common.h"
 #include "graphics/window.hpp"
-#define WINDOW_USE_CHRONO
+// #define WINDOW_USE_CHRONO
 
 #if defined(WINDOW_USE_CHRONO)
     #include <chrono>
@@ -22,8 +22,8 @@ class GlutWindow  : public Window {
         GlutWindow(Application* app, const char* title="Glut Window", int width=600, int height=400);
 		~GlutWindow();
 
-        auto start() -> void override; 
-        auto exit() -> void override; 
+        auto start() -> void override;
+        auto exit() -> void override;
 
 		auto title() -> const char* override;
         auto height() -> u32 override;

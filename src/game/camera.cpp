@@ -81,7 +81,7 @@ struct Camera {
         front.y = std::sin(radians(this->pitch));
         front.z = std::sin(radians(this->yaw)) * std::cos(radians(this->pitch));
         this->direction = front.normalize();
-        this->right = vec3::cross(this->direction, this->world_up).normalize();  
+        this->right = vec3::cross(this->direction, this->world_up).normalize();
         this->up = vec3::cross(this->right, this->direction).normalize();
     }
 

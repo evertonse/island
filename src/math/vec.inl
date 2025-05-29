@@ -155,7 +155,7 @@ namespace cyx {
 		}
 
 		static vec<f32,DIM>& normalize(const vec<f32,DIM>& self) { 
-			f32 scale = 1.0 / norm(); 
+			f32 scale = 1.0 / self.norm(); 
 			for (size_t i = 0; i < DIM; i++) {
 				self[i] = static_cast<f32>(self[i]) * scale; 
             }
@@ -164,7 +164,7 @@ namespace cyx {
 
 		vec<f32,DIM> normalize() const { 
 			vec<f32,DIM> v;
-			f32 scale = 1.0 / norm(); 
+			f32 scale = 1.0 / norm();
 			for (size_t i = 0; i < DIM; i++) {
 				v[i] = static_cast<f32>((*this)[i]) * scale; }
 			return v;
@@ -349,7 +349,7 @@ namespace cyx {
 
         vec3 cross(const vec3& other) const {
             vec3& v1 = this;
-            vec3& v2 = other;
+            const vec3& v2 = other;
             return vec3(v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]);
         } 
 

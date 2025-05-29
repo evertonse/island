@@ -13,7 +13,8 @@
 #include "graphics/model.cpp"
 #include "graphics/application.cpp"
 
-#include "platform/glut_window.cpp"
+// #include "platform/glut_window.cpp"
+#include "platform/glfw_window.cpp"
 
 #include "game/camera_accelerated.cpp"
 #include "game/camera.cpp"

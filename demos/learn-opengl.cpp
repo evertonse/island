@@ -17,7 +17,7 @@ unsigned int VBO, VAO, EBO;
 #define CYX_POINTER_BASED_APPLICATION
 #include "cyx.hpp"
 #include "cyx.cpp"
-#include "utils/log.hpp"
+// #include "utils/log.hpp"
 #include <string>
 #include <map>
 

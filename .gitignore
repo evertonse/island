@@ -5,3 +5,6 @@ vendor/SDL
 **.exe
 __pycache__
 assets/ignore
+**.o
+**.obj
+bin/**

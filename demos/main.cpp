@@ -40,7 +40,7 @@ void display(void)
 }
 // Inicializa parâmetros de rendering
 void init (void)
-{   
+{
     // Define a cor de fundo da janela de visualização
     glClearColor(1.0, 1.0, 0.0, 1);
 }

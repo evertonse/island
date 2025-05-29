@@ -5,13 +5,13 @@
 #define CYX_POINTER_BASED_APPLICATION
 #include "cyx.hpp"
 #include "cyx.cpp"
-#include "utils/log.hpp"
+// #include "utils/log.hpp"
 
 using namespace cyx;
 using namespace island;
 
 struct Flags {
-    bool mouse_lock = false; 
+    bool mouse_lock = false;
     bool mouse_is_down = false;
 } flag;
 
@@ -24,7 +24,7 @@ void on_scroll(f32 dir);
 void on_mouse(Window&, f32 x, f32 y);
 void on_scroll(f32 dir);
 
-const unsigned int WIDTH = 750; 
+const unsigned int WIDTH = 750;
 const unsigned int HEIGHT = 600;
 
 AccelCamera cam = AccelCamera(vec3(10.0f, 40.0f, 10.0f), vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f);
@@ -158,7 +158,7 @@ void on_update(Window& win, f64 dt) {
     light.uniform_mat4("shadow_mvp",  shadow.matrix().data(), true);
     shadow.bind_texture();
     light.uniform_int("tex_shadow_map", 1);
-#endif    
+#endif
     // Pass delta_time to make the water move
     persistent_data f32 time = dt;
     time += dt;
@@ -272,7 +272,7 @@ void on_event(Window& win, Event e){
     if (e.type == EventType::KEYDOWN){
         key_is_down[e.key] = true;
         if(e.key == Key::ESCAPE) {
-           flag.mouse_lock = false; 
+           flag.mouse_lock = false;
         }
     }
     if (e.type == EventType::KEYUP) {
@@ -281,10 +281,10 @@ void on_event(Window& win, Event e){
     if (e.type == EventType::MOUSEDOWN) {
         flag.mouse_lock = true;
         flag.mouse_is_down = true;
-    }    
+    }
     else if (e.type == EventType::MOUSEUP) {
         flag.mouse_is_down = false;
-    }   
+    }
     if (e.type == EventType::MOUSEMOVE) {
 
         on_mouse(win,(f32)e.mouse.x, f32(e.mouse.y));
@@ -303,7 +303,7 @@ void on_destroy(Window& win) {
 }
 
 
-// Calculate offset  before passing to the camera on_mouse
+// Calculate offset before passing to the camera on_mouse
 void on_mouse(Window& win, f32 xpos, f32 ypos) {
     persistent_data f32 xlast = 0.0f;
     persistent_data f32 ylast = 0.0f;
@@ -343,8 +343,10 @@ void on_scroll(f32 dir) {
 }
 
 // Init OpenGL configurations and call the gladLoader
-void init_gl(){
+void init_gl() {
     gladLoadGL();
+
+    // gladLoadGL(glfwGetProcAddress); // This version of glad ain't got this
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
@@ -368,8 +370,10 @@ void update_title(Window& win, f32 dt) {
 }
 
 // Main expects a file input, if not it will use a default input.txt
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
+
     Application app;
+    std::cout << "[main]: app allocated.About to read input file.\n" ;
 
     if (argc > 1) {
         world_file = argv[1];
@@ -377,13 +381,18 @@ int main(int argc, const char* argv[]) {
     }
     else {
         std::cout << "[main]: Started with no input file. The default input file:" << world_file <<" will be used" <<'\n';
-    } 
-    app.on_init = [](Window&){std::cout << "[Window]: glut init\n";};
+    }
+    std::cout << '[' << __func__ << ']' << "HERE" << std::endl; std::cout.flush();
+    app.on_init = [](Window&){std::cout << "[Window]: Window init\n";};
     app.on_create = on_create;
     app.on_update = on_update;
     app.on_event  = on_event;
     app.on_destroy = on_destroy;
-    Window* win   = new GlutWindow(&app, "Island", WIDTH, HEIGHT );
+    // Window* win   = new GlutWindow(&app, "Island", WIDTH, HEIGHT );
+    Window* win   = new GlfwWindow(&app, "Island", WIDTH, HEIGHT );
+    std::cout << '[' << __func__ << ']' << "Windows created\n";
+
+
     win->set_width(WIDTH);
     win->set_height(HEIGHT);
     win->start();
