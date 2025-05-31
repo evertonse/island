@@ -29,6 +29,12 @@ If you're on `Msys2` it'll dectect and also build native windows executable.
 ## C++ 20 compiler
 - Might work with c++17 compiler, but it was only tested with ``g++ 12.2.0``
 
+## For linux it needs X11 devel libs because we'compiling Glfw ourselves
+
+On void:
+
+    sudo xbps-install -S libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel
+
 ---
 
 # Commands:
